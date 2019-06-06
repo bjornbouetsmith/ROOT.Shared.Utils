@@ -22,9 +22,10 @@ namespace ROOT.Shared.Utils.Tests
         public void DateTimeDump()
         {
             var dt = new DateTime(2019, 06, 06);
-
+            string expected = "2019-06-06 12:00:00.000";
             var str = dt.Dump();
             Console.WriteLine(str);
+            Assert.AreEqual(expected, str);
         }
     }
 }
