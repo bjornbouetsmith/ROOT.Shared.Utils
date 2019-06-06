@@ -10,15 +10,21 @@ namespace ROOT.Shared.Utils.Serialization
 
         static ClassDumper()
         {
-           
-            ParameterExpression builder = Expression.Parameter(typeof(StringBuilder), "builder");
-            ParameterExpression what = Expression.Parameter(typeof(T), "what");
+            try
+            {
+                ParameterExpression builder = Expression.Parameter(typeof(StringBuilder), "builder");
+                ParameterExpression what = Expression.Parameter(typeof(T), "what");
 
-            var body = GetObjDump(builder, what, typeof(T));
+                var body = GetObjDump(builder, what, typeof(T));
 
-            var actionExp = Expression.Lambda<Action<T, StringBuilder>>(body, what, builder);
+                var actionExp = Expression.Lambda<Action<T, StringBuilder>>(body, what, builder);
 
-            _dumper = actionExp.Compile();
+                _dumper = actionExp.Compile();
+            }
+            catch (Exception e)
+            {
+                _dumper = (to, sb) => sb.Append(e.ToString());
+            }
         }
 
         public override string Dump(T what)

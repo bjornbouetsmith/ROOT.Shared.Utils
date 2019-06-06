@@ -66,7 +66,6 @@ namespace ROOT.Shared.Utils.Serialization
 
                 if (toString != null)
                 {
-
                     val = Expression.Call(val, toString);
                 }
                 else

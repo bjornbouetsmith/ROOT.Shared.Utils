@@ -48,6 +48,15 @@ namespace ROOT.Shared.Utils.Tests
             var str = empty.Dump();
             Console.WriteLine(str);
         }
+
+        [TestMethod]
+        public void EmptyClassWithoutPropertiesTestNull()
+        {
+            var empty = new EmptyClass();
+
+            var str = ObjectDumper.Dump<EmptyClass>(null);
+            Console.WriteLine(str);
+        }
     }
 
     public class Outer
