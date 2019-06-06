@@ -7,7 +7,11 @@ param(
   [switch]$UsePreReleasePrefixes = $false,
   [switch]$Truncate = $false
 )
-[string]$buildNumber = $Revision
+if($BuildNumber.Length -eq 0)
+{
+ $BuildNumber="0"
+}
+$Revision = $buildNumber
 Write-Output "Getting the version number from file: [$VersionFile]"
 [version]$version
 $versionFileContent = Get-Content -Path $VersionFile -raw | ConvertFrom-Json
@@ -21,10 +25,17 @@ else {
 $major = $version.Major
 $minor = $version.Minor
 $patch = $version.Build
+#$revision = $version.Revision
 Write-Output "Source version is: [$version]"
 if ($UseCurrentDateForPatchValue -eq $true) {
   $patch = Get-Date -Format "yyMdd"
 }
+
+if($SourceBranch.Length -eq 0)
+{
+ $SourceBranch="refs/heads/master"
+}
+
 [string]$sourceBranchName = $SourceBranch.Substring($SourceBranch.LastIndexOf("/") + 1, $SourceBranch.Length - $SourceBranch.LastIndexOf("/") - 1).Replace(".", "")
 if ($sourceBranchName.Substring(0, 1) -match "[0-9]") {
   Write-Output "Source branch name starts with a number. Prefixing it with B."
