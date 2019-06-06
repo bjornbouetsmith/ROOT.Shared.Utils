@@ -27,5 +27,50 @@ namespace ROOT.Shared.Utils.Tests
             Console.WriteLine(str);
             Assert.AreEqual(expected, str);
         }
+
+        [TestMethod]
+        public void SimpleClass()
+        {
+            var outer = new Outer();
+            outer.Inner = new Inner { Empty=new EmptyClass(),My = MyEnum.Value1};
+
+            var str = outer.Dump();
+
+            Console.WriteLine(str);
+
+        }
+
+        [TestMethod]
+        public void EmptyClassWithoutPropertiesTest()
+        {
+            var empty = new EmptyClass();
+
+            var str = empty.Dump();
+            Console.WriteLine(str);
+        }
+    }
+
+    public class Outer
+    {
+        public Inner Inner { get; set; }
+        public string Name { get; set; }
+        public double Price { get; set; }
+    }
+
+    public class Inner
+    {
+        public MyEnum My { get; set; }
+        public EmptyClass Empty { get; set; }
+    }
+
+    public enum MyEnum
+    {
+        Value0 = 0,
+        Value1 = 1
+    }
+
+    public class EmptyClass
+    {
+
     }
 }

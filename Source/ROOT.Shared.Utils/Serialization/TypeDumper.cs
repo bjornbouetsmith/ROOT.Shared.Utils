@@ -98,9 +98,13 @@ namespace ROOT.Shared.Utils.Serialization
                 list.Add(Expression.Call(builder, Append, Expression.Constant(", ", typeof(string))));
             }
 
-            list.RemoveAt(list.Count - 1);
+            if (list.Count > 0)
+            {
+                list.RemoveAt(list.Count - 1);
+                return Expression.Block(list);
+            }
 
-            return Expression.Block(list);
+            return Expression.Empty();
         }
 
         private static readonly Dictionary<Type, TypeDumper> Dumpers = new Dictionary<Type, TypeDumper>();
