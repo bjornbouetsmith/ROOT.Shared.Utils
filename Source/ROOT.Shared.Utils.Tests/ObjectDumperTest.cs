@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ROOT.Shared.Utils.Serialization;
+using ROOT.Shared.Utils.Tests.Ebay.FindingService;
 
 namespace ROOT.Shared.Utils.Tests
 {
@@ -57,6 +58,15 @@ namespace ROOT.Shared.Utils.Tests
             var str = ObjectDumper.Dump<EmptyClass>(null);
             Console.WriteLine(str);
         }
+
+        [TestMethod]
+        public void EbayResponseTest()
+        {
+            var resp = new FindItemsByKeywordsResponse();
+
+            var str = resp.Dump();
+            Console.WriteLine(str);
+        }
     }
 
     public class Outer
@@ -82,4 +92,6 @@ namespace ROOT.Shared.Utils.Tests
     {
 
     }
+    
+    
 }

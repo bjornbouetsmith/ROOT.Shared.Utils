@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace ROOT.Shared.Utils.Serialization
@@ -7,7 +8,6 @@ namespace ROOT.Shared.Utils.Serialization
     public class ClassDumper<T> : TypeDumper<T>
     {
         private static readonly Action<T, StringBuilder> _dumper;
-
         static ClassDumper()
         {
             try
@@ -15,9 +15,15 @@ namespace ROOT.Shared.Utils.Serialization
                 ParameterExpression builder = Expression.Parameter(typeof(StringBuilder), "builder");
                 ParameterExpression what = Expression.Parameter(typeof(T), "what");
 
-                var body = GetObjDump(builder, what, typeof(T));
+                var body = Expression.Block(typeof(void), GetObjDump(builder, what, typeof(T)));
 
-                var actionExp = Expression.Lambda<Action<T, StringBuilder>>(body, what, builder);
+                var parameterExpression = Expression.Parameter(typeof(Exception), "ex");
+
+                Expression writeEx = Expression.Block(typeof(void), Expression.Call(builder, Append, Expression.Call(Expression.Convert(parameterExpression, typeof(object)), ObjToString)));
+
+                var tryCatch = Expression.TryCatch(body, Expression.MakeCatchBlock(typeof(Exception), parameterExpression, writeEx, null));
+                
+                var actionExp = Expression.Lambda<Action<T, StringBuilder>>(tryCatch, what, builder);
 
                 _dumper = actionExp.Compile();
             }
@@ -29,6 +35,11 @@ namespace ROOT.Shared.Utils.Serialization
 
         public override string Dump(T what)
         {
+            if (Equals(what, default(T)))
+            {
+                return string.Empty;
+            }
+
             var builder = new StringBuilder();
             _dumper(what, builder);
             return builder.ToString();
