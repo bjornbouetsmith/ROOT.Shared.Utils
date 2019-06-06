@@ -25,7 +25,7 @@ else {
 $major = $version.Major
 $minor = $version.Minor
 $patch = $version.Build
-#$revision = $version.Revision
+
 Write-Output "Source version is: [$version]"
 if ($UseCurrentDateForPatchValue -eq $true) {
   $patch = Get-Date -Format "yyMdd"

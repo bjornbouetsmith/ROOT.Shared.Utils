@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Version>$(BUILD_BUILDNUMBER)</Version>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Version)' == ''">
+        <Version>1.0.0-alpha</Version>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Description>Shared utilities</Description>
+        <PackageVersion>$(Version)</PackageVersion>
+    </PropertyGroup>
+
+</Project>
