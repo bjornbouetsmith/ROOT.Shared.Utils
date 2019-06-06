@@ -77,10 +77,7 @@ namespace ROOT.Shared.Utils.Serialization
                     val = Expression.Call(Expression.Convert(val, typeof(object)), ObjToString);
                 }
 
-                var appendVal = Expression.IfThenElse(
-                    Expression.Equal(Expression.Default(fieldType), Expression.PropertyOrField(what, name)),
-                    Expression.Empty(),
-                    Expression.Call(builder, Append, val));
+                var appendVal = Expression.Call(builder, Append, val);
                 list.Add(appendVal);
                 return Expression.Block(list);
             }

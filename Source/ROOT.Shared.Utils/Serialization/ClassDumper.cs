@@ -37,7 +37,7 @@ namespace ROOT.Shared.Utils.Serialization
         {
             if (Equals(what, default(T)))
             {
-                return string.Empty;
+                return "null";
             }
 
             var builder = new StringBuilder();
