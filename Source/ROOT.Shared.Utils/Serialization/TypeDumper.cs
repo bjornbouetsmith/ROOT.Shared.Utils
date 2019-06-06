@@ -110,8 +110,10 @@ namespace ROOT.Shared.Utils.Serialization
     
         public static TypeDumper Create(Type t)
         {
+            
             if (!Dumpers.TryGetValue(t, out var dumper))
             {
+                Console.WriteLine("Creating object dumper for type: {0}",t.FullName);
                 var dumperType = typeof(TypeDumper<>).MakeGenericType(t);
 
                 var method = dumperType.GetMethod(nameof(Create), BindingFlags.Public | BindingFlags.Static);
