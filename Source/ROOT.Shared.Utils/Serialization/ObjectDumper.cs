@@ -11,5 +11,10 @@
         {
             return TypeDumper.Create<T>().Dump(what);
         }
+
+        public static string Dump<T>(this T what, IFormatter formatter)
+        {
+            return TypeDumper.Create<T>().Dump(what, formatter);
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace ROOT.Shared.Utils.Serialization
@@ -15,6 +14,15 @@ namespace ROOT.Shared.Utils.Serialization
         public override string Dump(DateTime what)
         {
             return what.ToString(Format);
+        }
+
+        public override string Dump(DateTime what, IFormatter formatter)
+        {
+            var sb = new StringBuilder();
+
+            formatter.WriteValue(what, sb);
+
+            return sb.ToString();
         }
     }
 }

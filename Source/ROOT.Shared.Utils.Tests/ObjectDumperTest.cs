@@ -42,6 +42,19 @@ namespace ROOT.Shared.Utils.Tests
         }
 
         [TestMethod]
+        public void SimpleClassWithFormatter()
+        {
+            var outer = new Outer();
+            outer.Name = "bjørn";
+            outer.Price = 1.2345d;
+            outer.Inner = new Inner { Empty = new EmptyClass(), My = MyEnum.Value1 };
+
+            var str = outer.Dump(new JsonFormatter());
+
+            Console.WriteLine(str);
+        }
+
+        [TestMethod]
         public void EmptyClassWithoutPropertiesTest()
         {
             var empty = new EmptyClass();
