@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -44,7 +45,7 @@ namespace ROOT.Shared.Utils.Tests
 
             call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
 
-
+            
             var response = call.LoadResponse();
             Assert.IsTrue(response.Success);
             Console.WriteLine(response.StdOut);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace ROOT.Shared.Utils.OS
 {
@@ -53,7 +54,7 @@ namespace ROOT.Shared.Utils.OS
 
                 process.WaitForExit();
                 var exitCode = process.ExitCode;
-                return new ProcessCallResult { Success = exitCode == 0, StdOut = process.StandardOutput.ReadToEnd(), StdError = process.StandardError.ReadToEnd() };
+                return new ProcessCallResult { ExitCode = exitCode, StdOut = process.StandardOutput.ReadToEnd(), StdError = process.StandardError.ReadToEnd() };
             }
         }
 
@@ -79,7 +80,7 @@ namespace ROOT.Shared.Utils.OS
         const string WindowsShell = "C:\\Windows\\System32\\cmd.exe";
         private const string UnixShell = "/bin/bash";
 
-        private static readonly string Shell = Environment.OSVersion.Platform == PlatformID.Win32NT ? WindowsShell : UnixShell;
+        private static readonly string Shell = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsShell : UnixShell;
 
         public static ProcessCall Pipe(this ProcessCall processCall, ProcessCall other)
         {
@@ -88,7 +89,7 @@ namespace ROOT.Shared.Utils.OS
                 throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
             }
 
-            string args = string.Concat("/c"," ", processCall.BinPath, " ", processCall.Arguments, " | ", other.BinPath, " ", other.Arguments).Trim();
+            string args = string.Concat("/c", " ", processCall.BinPath, " ", processCall.Arguments, " | ", other.BinPath, " ", other.Arguments).Trim();
 
             return new ProcessCall(Shell, args);
         }
@@ -96,7 +97,8 @@ namespace ROOT.Shared.Utils.OS
 
     public class ProcessCallResult
     {
-        public bool Success { get; set; }
+        public bool Success => ExitCode == 0;
+        public int ExitCode { get; set; }
         public string StdOut { get; set; }
         public string StdError { get; set; }
     }
