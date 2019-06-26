@@ -24,5 +24,34 @@ namespace ROOT.Shared.Utils.Tests
 
         }
 
+        [TestMethod]
+        public void PipeTestGeneration()
+        {
+            var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");
+
+            call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
+
+
+            Assert.AreEqual(call.FullCommandLine, "C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD");
+
+            Console.WriteLine(call.FullCommandLine);
+        }
+
+        [TestMethod]
+        public void PipeExecution()
+        {
+            var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");
+
+            call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
+
+
+            var response = call.LoadResponse();
+            Assert.IsTrue(response.Success);
+            Console.WriteLine(response.StdOut);
+            Assert.AreEqual("-YD Enables the disk performance counters for physical drives.", response.StdOut.Trim());
+            
+
+        }
+
     }
 }
