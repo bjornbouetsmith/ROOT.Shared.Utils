@@ -6,7 +6,7 @@ namespace ROOT.Shared.Utils.Serialization
 {
     public class JsonValueFormatter : IValueFormatter
     {
-        private static readonly string Format = "yyyy-MM-dd hh:mm:ss.fff";
+        private static readonly string Format = "yyyy-MM-ddThh:mm:ss.fffZ";
 
         public void WriteNumber<T>(T number, StringBuilder target)
             where T : struct, IConvertible, IFormattable
@@ -23,7 +23,14 @@ namespace ROOT.Shared.Utils.Serialization
 
         public void Write(DateTime value, StringBuilder target)
         {
-            target.Append(value.ToString(Format));
+            if (value.Kind == DateTimeKind.Utc)
+            {
+                target.Append(value.ToString(Format));
+            }
+            else
+            {
+                target.Append(value.ToUniversalTime().ToString(Format));
+            }
         }
 
         public void Write(char value, StringBuilder target)
