@@ -47,14 +47,13 @@ namespace ROOT.Shared.Utils.OS
 
             };
 
-
             using (var process = Process.Start(startInfo))
             {
                 CopyStreamToProcessInput(inputStream, process);
 
                 process.WaitForExit();
                 var exitCode = process.ExitCode;
-                return new ProcessCallResult { ExitCode = exitCode, StdOut = process.StandardOutput.ReadToEnd(), StdError = process.StandardError.ReadToEnd() };
+                return new ProcessCallResult { ExitCode = exitCode, StdOut = process.StandardOutput.ReadToEnd(), StdError = process.StandardError.ReadToEnd(), CommandLine = string.Join(" ", BinPath, args) };
             }
         }
 
@@ -93,6 +92,29 @@ namespace ROOT.Shared.Utils.OS
 
             return new ProcessCall(Shell, args);
         }
+
+        public static ProcessCallException ToException(this ProcessCallResult result)
+        {
+            return new ProcessCallException(result.CommandLine, result.ExitCode, result.StdOut, result.StdError);
+        }
+    }
+
+    [Serializable]
+    public class ProcessCallException : Exception
+    {
+        public string CommandLine { get; }
+        public int ExitCode { get; }
+        public string StdOut { get; }
+        public string StdError { get; }
+
+        public ProcessCallException(string commandLine, int exitCode, string stdOut, string stdError)
+            : base($"Command: {commandLine} failed with error code: " + Environment.NewLine + exitCode + Environment.NewLine + stdError)
+        {
+            CommandLine = commandLine;
+            ExitCode = exitCode;
+            StdOut = stdOut;
+            StdError = stdError;
+        }
     }
 
     public class ProcessCallResult
@@ -101,5 +123,6 @@ namespace ROOT.Shared.Utils.OS
         public int ExitCode { get; set; }
         public string StdOut { get; set; }
         public string StdError { get; set; }
+        public string CommandLine { get; set; }
     }
 }
