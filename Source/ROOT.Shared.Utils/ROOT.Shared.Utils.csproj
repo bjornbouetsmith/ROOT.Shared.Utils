@@ -1,4 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+      <PropertyGroup Condition="'$(ReleaseNotes)' == ''">
+        <RNotes>General utilities####see git checkin comments for release notes</RNotes>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(ReleaseNotes)' != ''">
+        <RNotes>$(ReleaseNotes)</RNotes>
+    </PropertyGroup>
+        
+    
     <PropertyGroup>
         <Version>$(BUILD_BUILDNUMBER)</Version>
     </PropertyGroup>
@@ -8,11 +17,15 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <PackageVersion>1.0.0.0</PackageVersion>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <FileVersion>1.0.0.0</FileVersion>
+        <PackageReleaseNotes>$(RNotes.Replace("####","%0D%0D"))</PackageReleaseNotes>
         <LangVersion>latest</LangVersion>
         <TargetFramework>netstandard2.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Description>Shared utilities</Description>
-        <PackageVersion>$(Version)</PackageVersion>
+        <Description>Shared utilities with general usage classes.</Description>
+        <PackageId>ROOT.Shared.Utils</PackageId>
     </PropertyGroup>
 
 </Project>
