@@ -108,7 +108,7 @@ namespace ROOT.Shared.Utils.OS
         public string StdError { get; }
 
         public ProcessCallException(string commandLine, int exitCode, string stdOut, string stdError)
-            : base($"Command: {commandLine} failed with error code: " + Environment.NewLine + exitCode + Environment.NewLine + stdError)
+            : base($"Command: {commandLine} failed with error code: " + exitCode + Environment.NewLine + stdError)
         {
             CommandLine = commandLine;
             ExitCode = exitCode;
