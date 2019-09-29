@@ -64,7 +64,7 @@ namespace ROOT.Shared.Utils.Serialization
             List<Expression> list = new List<Expression>();
             list.Add(Expression.Call(builder, Append, field));
             list.Add(Expression.Call(builder, Append, sep));
-            Debug.WriteLine("Creating dumper for field/property:{0}", name);
+            Debug.WriteLine($"Creating dumper for field/property:{name}");
             if (fieldType.IsValueType)
             {
                 var toString = fieldType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(mi => mi.Name == nameof(ToString) && mi.GetParameters().Length == 0);
@@ -118,7 +118,7 @@ namespace ROOT.Shared.Utils.Serialization
 
         internal static Expression GetFullObjDump(ParameterExpression builder, ParameterExpression formatter, Expression what, Type whatType)
         {
-            Debug.WriteLine("Creating dumper for type:{0}", whatType.FullName);
+            Debug.WriteLine($"Creating dumper for type:{whatType.FullName}");
 
             return WriteObject(builder, formatter, what, whatType);
         }
@@ -223,7 +223,7 @@ namespace ROOT.Shared.Utils.Serialization
 
         internal static Expression GetObjDump(ParameterExpression builder, Expression what, Type whatType)
         {
-            Debug.WriteLine("Creating dumper for type:{0}", whatType.FullName);
+            Debug.WriteLine($"Creating dumper for type:{whatType.FullName}" );
             if (whatType == typeof(string))
             {
                 return Expression.Call(builder, Append, what);
@@ -327,7 +327,7 @@ namespace ROOT.Shared.Utils.Serialization
         {
             if (!Dumpers.TryGetValue(t, out var dumper))
             {
-                Debug.WriteLine("Creating object dumper for type: {0}", t.FullName);
+                Debug.WriteLine($"Creating object dumper for type: {t.FullName}");
                 var dumperType = typeof(TypeDumper<>).MakeGenericType(t);
 
                 var method = dumperType.GetMethod(nameof(Create), BindingFlags.Public | BindingFlags.Static);
