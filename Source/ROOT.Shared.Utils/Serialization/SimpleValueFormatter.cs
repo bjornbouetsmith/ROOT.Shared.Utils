@@ -1,15 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace ROOT.Shared.Utils.Serialization
 {
-    public class JsonValueFormatter : ValueFormatter, IValueFormatter
+    public abstract class ValueFormatter
+    {
+        protected static readonly string Format = "yyyy-MM-ddThh:mm:ss.fffZ";
+
+
+        public void WriteNumber<T>(T number, StringBuilder target)
+            where T : struct, IConvertible, IFormattable
+        {
+            target.Append(number.ToString(CultureInfo.InvariantCulture));
+        }
+
+    }
+
+    public class SimpleValueFormatter : ValueFormatter, IValueFormatter
     {
         public void Write(string value, StringBuilder target)
         {
-            target.Append("\"");
             target.Append(value);
-            target.Append("\"");
         }
 
         public void Write(DateTime value, StringBuilder target)
@@ -26,9 +39,7 @@ namespace ROOT.Shared.Utils.Serialization
 
         public void Write(char value, StringBuilder target)
         {
-            target.Append("\"");
             target.Append(value);
-            target.Append("\"");
         }
 
         public void Write(byte value, StringBuilder target)

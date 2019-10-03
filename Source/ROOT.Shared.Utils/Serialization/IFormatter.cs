@@ -11,6 +11,7 @@ namespace ROOT.Shared.Utils.Serialization
         void WriteValue<T>(T data, StringBuilder target);
 
         void BeginArray(StringBuilder target);
+        void WriteArrayValueSep(StringBuilder target);
         void EndArray(StringBuilder target);
 
         ITypeFormatter<T> Get<T>();

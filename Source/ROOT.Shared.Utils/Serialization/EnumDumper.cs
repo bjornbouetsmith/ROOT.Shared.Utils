@@ -13,9 +13,16 @@ namespace ROOT.Shared.Utils.Serialization
         {
             var sb = new StringBuilder();
 
-            formatter.WriteValue(what, sb);
+            Dump(what, formatter, sb);
 
             return sb.ToString();
+        }
+
+        public override StringBuilder Dump(T what, IFormatter formatter, StringBuilder target)
+        {
+            formatter.WriteValue(what, target);
+
+            return target;
         }
 
         public override string Dump(object what)

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ROOT.Shared.Utils.Serialization
 {
-    public static class JsonFormatter<T>
+    public static class SimpleFormatter<T>
     {
         private static ITypeFormatter<T> _instance;
         public static ITypeFormatter<T> Instance => _instance ?? (_instance = GetInstance());
@@ -16,31 +16,26 @@ namespace ROOT.Shared.Utils.Serialization
                 return (ITypeFormatter<T>)Activator.CreateInstance(concrete);
             }
 
-            var jsonValueFormatter = new JsonValueFormatter();
+            var jsonValueFormatter = new SimpleValueFormatter();
             return (ITypeFormatter<T>)jsonValueFormatter;
         }
     }
 
-    public class JsonFormatter : IFormatter
+    public class SimpleFormatter : IFormatter
     {
         private bool _hasWrittenArrayValueSep;
-
-
         public void BeginObject(StringBuilder target)
         {
-            target.Append("{");
         }
 
         public void EndObject(StringBuilder target)
         {
-            target.Append("}");
         }
 
         public void BeginField(string fieldName, StringBuilder target)
         {
-            target.Append("\"");
             target.Append(fieldName);
-            target.Append("\":");
+            target.Append(":");
         }
 
         public void EndField(string fieldName, StringBuilder target)
@@ -50,8 +45,7 @@ namespace ROOT.Shared.Utils.Serialization
 
         public void WriteValue<T>(T data, StringBuilder target)
         {
-            JsonFormatter<T>.Instance.Write(data, target);
-
+            SimpleFormatter<T>.Instance.Write(data, target);
         }
 
         public void BeginArray(StringBuilder target)
@@ -61,8 +55,8 @@ namespace ROOT.Shared.Utils.Serialization
 
         public void WriteArrayValueSep(StringBuilder target)
         {
-            _hasWrittenArrayValueSep = true;
             target.Append(",");
+            _hasWrittenArrayValueSep = true;
         }
 
         public void EndArray(StringBuilder target)
@@ -81,7 +75,7 @@ namespace ROOT.Shared.Utils.Serialization
 
         public ITypeFormatter<T> Get<T>()
         {
-            return JsonFormatter<T>.Instance;
+            return SimpleFormatter<T>.Instance;
         }
     }
 }

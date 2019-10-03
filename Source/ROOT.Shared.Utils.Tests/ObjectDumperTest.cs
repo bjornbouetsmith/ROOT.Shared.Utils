@@ -80,6 +80,16 @@ namespace ROOT.Shared.Utils.Tests
             var str = resp.Dump();
             Console.WriteLine(str);
         }
+
+        [TestMethod]
+        public void ArrayTypes()
+        {
+            var withArr = new ClassWithArrayAndIEnumerable();
+            withArr.Values = new[] {"First", "Secpmd"};
+            withArr.IntValues = new List<int> {1, 2, 3};
+
+            Console.WriteLine(withArr.Dump(new SimpleFormatter()));
+        }
     }
 
     public class Outer
@@ -105,6 +115,12 @@ namespace ROOT.Shared.Utils.Tests
     {
 
     }
-    
-    
+
+    public class ClassWithArrayAndIEnumerable
+    {
+        public string[] Values { get; set; }
+        public IEnumerable<int> IntValues { get; set; }
+    }
+
+
 }
