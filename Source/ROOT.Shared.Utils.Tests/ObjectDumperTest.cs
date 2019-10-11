@@ -103,6 +103,8 @@ namespace ROOT.Shared.Utils.Tests
     {
         public MyEnum My { get; set; }
         public EmptyClass Empty { get; set; }
+        public string EmptyString { get; set; }
+        public EmptyClass MustBeEmpty { get; set; }
     }
 
     public enum MyEnum
@@ -113,7 +115,7 @@ namespace ROOT.Shared.Utils.Tests
 
     public class EmptyClass
     {
-
+        public string Name { get; set; }
     }
 
     public class ClassWithArrayAndIEnumerable

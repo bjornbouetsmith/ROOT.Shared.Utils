@@ -67,7 +67,11 @@ namespace ROOT.Shared.Utils.Serialization
             {
                 target.Append("null");
             }
-            _fullDumper(what, target, formatter);
+            else
+            {
+                _fullDumper(what, target, formatter);
+            }
+
             return target;
         }
     }

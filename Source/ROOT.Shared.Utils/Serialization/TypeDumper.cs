@@ -101,12 +101,7 @@ namespace ROOT.Shared.Utils.Serialization
                 || whatType == typeof(string)
                 || whatType == typeof(DateTime))
             {
-                var realFormatterMethod = GetValueFormatterMethod.MakeGenericMethod(whatType);
-                var typeFormattertype = typeof(ITypeFormatter<>).MakeGenericType(whatType);
-                var typeFormatterMethod = typeFormattertype.GetMethod(nameof(ITypeFormatter<string>.Write));
-
-                var typeFormatter = Expression.Call(formatter, realFormatterMethod);
-                return Expression.Call(typeFormatter, typeFormatterMethod, what, builder);
+                return GetBuiltInTypeExpression(builder, formatter, what, whatType);
             }
 
             if (whatType.IsArray || whatType.GetInterfaces().Contains(typeof(IEnumerable)))
@@ -128,8 +123,7 @@ namespace ROOT.Shared.Utils.Serialization
                 if (prop.PropertyType.Namespace == typeof(string).Namespace)
                 {
                     // Built in simple types
-
-                    expressions.Add(GetFullObjDump(builder, formatter, val, prop.PropertyType));
+                    expressions.Add(GetBuiltInTypeExpression(builder, formatter, val, prop.PropertyType));
                 }
                 else
                 {
@@ -147,6 +141,16 @@ namespace ROOT.Shared.Utils.Serialization
             expressions.Add(Expression.Call(formatter, GetEndObjectMethod, builder));
 
             return Expression.Block(expressions);
+        }
+
+        private static Expression GetBuiltInTypeExpression(ParameterExpression builder, ParameterExpression formatter, Expression what, Type whatType)
+        {
+            var realFormatterMethod = GetValueFormatterMethod.MakeGenericMethod(whatType);
+            var typeFormattertype = typeof(ITypeFormatter<>).MakeGenericType(whatType);
+            var typeFormatterMethod = typeFormattertype.GetMethod(nameof(ITypeFormatter<string>.Write));
+
+            var typeFormatter = Expression.Call(formatter, realFormatterMethod);
+            return Expression.Call(typeFormatter, typeFormatterMethod, what, builder);
         }
 
         private static readonly MethodInfo GetBeginArrayMethod = typeof(IFormatter).GetMethod(nameof(IFormatter.BeginArray));
