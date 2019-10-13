@@ -40,22 +40,5 @@ namespace ROOT.Shared.Utils.Tests
                 File.Delete(tarName);
             }
         }
-
-        [TestMethod]
-        public void CreateOVA()
-        {
-            var relative = @"C:\Users\bbs\AppData\Local\Temp\export";
-            var path = @"C:\Users\bbs\AppData\Local\Temp\export\APITEST";
-            var tarName = Path.Combine(relative, "APITEST.ova");
-            using (var tar = new TarWriter(tarName, path))
-            {
-                //tar.WriteDirectoryEntryAsync(path).Wait();
-                foreach (var fileName in Directory.GetFiles(path))
-                {
-                    Console.WriteLine(fileName);
-                    tar.WriteAsync(fileName).Wait();
-                }
-            }
-        }
     }
 }
