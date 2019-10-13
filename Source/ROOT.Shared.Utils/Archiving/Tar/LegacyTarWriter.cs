@@ -55,12 +55,12 @@ namespace ROOT.Shared.Utils.Archiving.Tar
                 _outStream = null;
             }
         }
-        
+
         public async Task WriteDirectoryEntryAsync(string path, int userId, int groupId, int mode)
         {
             if (string.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path));
-            if (path[path.Length - 1] != Path.DirectorySeparatorChar )
+            if (path[path.Length - 1] != Path.DirectorySeparatorChar)
             {
                 path += Path.DirectorySeparatorChar;
             }
@@ -130,6 +130,11 @@ namespace ROOT.Shared.Utils.Archiving.Tar
         {
             var modifiedPath = GetPath(name);
             Debug.WriteLine(modifiedPath);
+            if (modifiedPath == string.Empty)
+            {
+                modifiedPath += ".";
+            }
+
             var header = new TarHeader
             {
                 FileName = modifiedPath,
@@ -158,7 +163,7 @@ namespace ROOT.Shared.Utils.Archiving.Tar
             int extra = _relativeToPath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? 0 : 1;
             if (toLower.IndexOf(_relativeToPath) > -1)
             {
-                return realPath.Substring(_relativeToPath.Length);
+                return realPath.Substring(_relativeToPath.Length + extra);
             }
 
             return realPath;
@@ -167,14 +172,18 @@ namespace ROOT.Shared.Utils.Archiving.Tar
         public async Task AlignTo512Async(long size, bool acceptZero)
         {
             size %= 512;
+            
             if (size == 0 && !acceptZero) return;
             if (size == 0)
             {
                 size = 512;
             }
+            else
+            {
+                size = 512-size;
+            }
 
             await OutStream.WriteAsync(_zeroes, 0, (int)size);
-
         }
 
         public virtual async Task Close()
