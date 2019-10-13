@@ -28,4 +28,8 @@
         <PackageId>ROOT.Shared.Utils</PackageId>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Archiving\Tar\" />
+    </ItemGroup>
+
 </Project>
