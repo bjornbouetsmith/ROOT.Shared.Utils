@@ -97,6 +97,7 @@ namespace ROOT.Shared.Utils.Tests
         public Inner Inner { get; set; }
         public string Name { get; set; }
         public double Price { get; set; }
+        public bool Active { get; set; }
     }
 
     public class Inner

@@ -65,5 +65,7 @@ namespace ROOT.Shared.Utils.Serialization
         {
             WriteNumber(value, target);
         }
+
+       
     }
 }

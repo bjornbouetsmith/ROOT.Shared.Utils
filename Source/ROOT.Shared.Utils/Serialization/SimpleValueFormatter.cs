@@ -9,13 +9,23 @@ namespace ROOT.Shared.Utils.Serialization
     {
         protected static readonly string Format = "yyyy-MM-ddThh:mm:ss.fffZ";
 
-
         public void WriteNumber<T>(T number, StringBuilder target)
             where T : struct, IConvertible, IFormattable
         {
             target.Append(number.ToString(CultureInfo.InvariantCulture));
         }
 
+        public void Write(bool value, StringBuilder target)
+        {
+            if (value)
+            {
+                target.Append("true");
+            }
+            else
+            {
+                target.Append("false");
+            }
+        }
     }
 
     public class SimpleValueFormatter : ValueFormatter, IValueFormatter
