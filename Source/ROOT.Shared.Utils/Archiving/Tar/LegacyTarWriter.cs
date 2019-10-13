@@ -155,7 +155,7 @@ namespace ROOT.Shared.Utils.Archiving.Tar
             // expected outcome
             //tar\tar2
             var toLower = realPath.ToLowerInvariant();
-
+            int extra = _relativeToPath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? 0 : 1;
             if (toLower.IndexOf(_relativeToPath) > -1)
             {
                 return realPath.Substring(_relativeToPath.Length);
