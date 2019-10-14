@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
@@ -25,6 +24,11 @@ namespace ROOT.Shared.Utils.Serialization
             {
                 target.Append("false");
             }
+        }
+
+        public void Write(Guid value, StringBuilder target)
+        {
+            target.Append(value);
         }
     }
 

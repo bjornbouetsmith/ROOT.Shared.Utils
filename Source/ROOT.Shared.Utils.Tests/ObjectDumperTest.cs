@@ -47,6 +47,7 @@ namespace ROOT.Shared.Utils.Tests
             var outer = new Outer();
             outer.Name = "bjørn";
             outer.Price = 1.2345d;
+            outer.Id = Guid.NewGuid();
             outer.Inner = new Inner { Empty = new EmptyClass(), My = MyEnum.Value1 };
 
             var str = outer.Dump(new JsonFormatter());
@@ -98,6 +99,7 @@ namespace ROOT.Shared.Utils.Tests
         public string Name { get; set; }
         public double Price { get; set; }
         public bool Active { get; set; }
+        public Guid Id { get; set; }
     }
 
     public class Inner

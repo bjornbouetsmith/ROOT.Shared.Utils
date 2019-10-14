@@ -13,7 +13,8 @@ namespace ROOT.Shared.Utils.Serialization
         ITypeFormatter<float>,
         ITypeFormatter<double>,
         ITypeFormatter<decimal>,
-        ITypeFormatter<bool>
+        ITypeFormatter<bool>,
+        ITypeFormatter<Guid>
     {
     }
 }
