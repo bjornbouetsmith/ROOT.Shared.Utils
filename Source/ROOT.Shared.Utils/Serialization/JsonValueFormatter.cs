@@ -3,6 +3,22 @@ using System.Text;
 
 namespace ROOT.Shared.Utils.Serialization
 {
+    public class JsonNullableFormatter<T> : ITypeFormatter<T?>
+        where T : struct
+    {
+        public void Write(T? value, StringBuilder target)
+        {
+            if (value.HasValue)
+            {
+                JsonFormatter<T>.Instance.Write(value.Value, target);
+            }
+            else
+            {
+                target.Append("null");
+            }
+        }
+    }
+
     public class JsonValueFormatter : ValueFormatter, IValueFormatter
     {
         public void Write(string value, StringBuilder target)
@@ -11,7 +27,12 @@ namespace ROOT.Shared.Utils.Serialization
             target.Append(value);
             target.Append("\"");
         }
-
+        public override void Write(Guid value, StringBuilder target)
+        {
+            target.Append("\"");
+            target.Append(value);
+            target.Append("\"");
+        }
         public void Write(DateTime value, StringBuilder target)
         {
             if (value.Kind == DateTimeKind.Utc)

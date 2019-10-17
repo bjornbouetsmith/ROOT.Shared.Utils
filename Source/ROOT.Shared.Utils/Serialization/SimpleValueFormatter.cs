@@ -26,7 +26,7 @@ namespace ROOT.Shared.Utils.Serialization
             }
         }
 
-        public void Write(Guid value, StringBuilder target)
+        public virtual void Write(Guid value, StringBuilder target)
         {
             target.Append(value);
         }

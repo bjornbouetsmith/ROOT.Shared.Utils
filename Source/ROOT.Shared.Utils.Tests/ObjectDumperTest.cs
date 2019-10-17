@@ -91,6 +91,23 @@ namespace ROOT.Shared.Utils.Tests
 
             Console.WriteLine(withArr.Dump(new SimpleFormatter()));
         }
+
+        [TestMethod]
+        public void WithNullableTest()
+        {
+            var empty = new WithNullable();
+            empty.GuidVal = Guid.Empty;
+            var str = empty.Dump();
+            Console.WriteLine(str);
+
+            Console.WriteLine(empty.Dump(new JsonFormatter()));
+        }
+    }
+
+    public class WithNullable
+    {
+        public int? IntVal { get; set; }
+        public Guid? GuidVal { get; set; }
     }
 
     public class Outer

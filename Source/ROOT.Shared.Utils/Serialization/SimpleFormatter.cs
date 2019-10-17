@@ -16,8 +16,26 @@ namespace ROOT.Shared.Utils.Serialization
                 return (ITypeFormatter<T>)Activator.CreateInstance(concrete);
             }
 
-            var jsonValueFormatter = new SimpleValueFormatter();
-            return (ITypeFormatter<T>)jsonValueFormatter;
+            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                var concrete = typeof(SimpleNullableFormatter<>).MakeGenericType(typeof(T).GetGenericArguments()[0]);
+                return (ITypeFormatter<T>)Activator.CreateInstance(concrete);
+            }
+
+            var valueFormatter = new SimpleValueFormatter();
+            return (ITypeFormatter<T>)valueFormatter;
+        }
+    }
+
+    public class SimpleNullableFormatter<T> : ITypeFormatter<T?>
+        where T : struct
+    {
+        public void Write(T? value, StringBuilder target)
+        {
+            if (value.HasValue)
+            {
+                SimpleFormatter<T>.Instance.Write(value.Value, target);
+            }
         }
     }
 

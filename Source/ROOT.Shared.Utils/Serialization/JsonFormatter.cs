@@ -16,6 +16,12 @@ namespace ROOT.Shared.Utils.Serialization
                 return (ITypeFormatter<T>)Activator.CreateInstance(concrete);
             }
 
+            if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                var concrete = typeof(JsonNullableFormatter<>).MakeGenericType(typeof(T).GetGenericArguments()[0]);
+                return (ITypeFormatter<T>)Activator.CreateInstance(concrete);
+            }
+
             var jsonValueFormatter = new JsonValueFormatter();
             return (ITypeFormatter<T>)jsonValueFormatter;
         }
