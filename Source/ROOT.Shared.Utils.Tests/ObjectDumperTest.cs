@@ -102,6 +102,35 @@ namespace ROOT.Shared.Utils.Tests
 
             Console.WriteLine(empty.Dump(new JsonFormatter()));
         }
+
+        [TestMethod]
+        public void WithPublicFields()
+        {
+            var obj = new WithPublicFields(46, 42);
+
+            Console.WriteLine(obj.Dump());
+
+            Console.WriteLine(obj.Dump(new JsonFormatter()));
+        }
+    }
+
+    public class WithPublicFields
+    {
+        public const int X = 1234;
+        public int Age;
+
+        public readonly string Type = "yes";
+
+        private int number;
+
+        public decimal Value { get; set; }
+
+        public WithPublicFields(int age, int number)
+        {
+            Age = age;
+            this.number = number;
+            Value = 1.234m;
+        }
     }
 
     public class WithNullable

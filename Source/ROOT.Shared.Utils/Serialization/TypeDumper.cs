@@ -43,7 +43,7 @@ namespace ROOT.Shared.Utils.Serialization
 
         public abstract string Dump(T what);
         public abstract string Dump(T what, IFormatter formatter);
-        public abstract StringBuilder Dump(T what, IFormatter formatter,StringBuilder target);
+        public abstract StringBuilder Dump(T what, IFormatter formatter, StringBuilder target);
     }
 
     public abstract class TypeDumper
@@ -57,7 +57,7 @@ namespace ROOT.Shared.Utils.Serialization
                 && mi.GetParameters()[0].ParameterType == typeof(string));
         protected static readonly MethodInfo GetDumperMethod = typeof(TypeDumper).GetMethods(BindingFlags.Static | BindingFlags.Public).FirstOrDefault(mi => mi.Name == nameof(TypeDumper.Create) && mi.GetParameters().Length == 1 && mi.GetParameters()[0].ParameterType == typeof(Type));
 
-    
+
 
         private static Expression IsNull(Expression what)
         {
@@ -65,15 +65,15 @@ namespace ROOT.Shared.Utils.Serialization
 
             return Expression.Call(method, Expression.Constant(null, typeof(object)), Expression.Convert(what, typeof(object)));
         }
-        
+
         private static Expression GetDumperAndDump(Expression formatter, Expression builder, Expression value, Type valueType)
         {
             var genericDumpertype = typeof(TypeDumper<>).MakeGenericType(valueType);
             var dumper = Expression.Convert(Expression.Call(GetDumperMethod, Expression.Constant(valueType, typeof(Type))), genericDumpertype);
 
             var method = genericDumpertype.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(mi => mi.Name == nameof(Dump) && mi.GetParameters().Length == 3 
-                                                              && mi.GetParameters()[0].ParameterType == valueType 
+                .FirstOrDefault(mi => mi.Name == nameof(Dump) && mi.GetParameters().Length == 3
+                                                              && mi.GetParameters()[0].ParameterType == valueType
                                                               && mi.GetParameters()[1].ParameterType == typeof(IFormatter)
                                                               && mi.GetParameters()[2].ParameterType == typeof(StringBuilder));
             return Expression.Call(dumper, method, value, formatter, builder);
@@ -97,7 +97,7 @@ namespace ROOT.Shared.Utils.Serialization
         internal static Expression WriteObject(ParameterExpression builder, ParameterExpression formatter, Expression what, Type whatType)
         {
 
-            if (whatType.IsPrimitive 
+            if (whatType.IsPrimitive
                 || whatType == typeof(string)
                 || whatType == typeof(DateTime))
             {
@@ -111,26 +111,20 @@ namespace ROOT.Shared.Utils.Serialization
 
 
             List<Expression> expressions = new List<Expression>();
-            
+
             var props = whatType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(pi => pi.CanRead && pi.CanWrite);
 
             expressions.Add(Expression.Call(formatter, GetBeginObjectMethod, builder));
 
             foreach (var prop in props)
             {
-                expressions.Add(Expression.Call(formatter, GetBeginFieldMethod, Expression.Constant(prop.Name, typeof(string)), builder));
-                var val = Expression.PropertyOrField(what, prop.Name);
-                if (prop.PropertyType.Namespace == typeof(string).Namespace)
-                {
-                    // Built in simple types
-                    expressions.Add(GetBuiltInTypeExpression(builder, formatter, val, prop.PropertyType));
-                }
-                else
-                {
-                    expressions.Add(GetDumperAndDump(formatter, builder, val, prop.PropertyType));
-                }
+                expressions.AddRange(GetFieldOrPropertyDumper(prop, what, builder, formatter));
+            }
 
-                expressions.Add(Expression.Call(formatter, GetEndFieldMethod, Expression.Constant(prop.Name, typeof(string)), builder));
+            var fields = whatType.GetFields(BindingFlags.Public | BindingFlags.Instance);//.Where(fi => !fi.IsInitOnly);
+            foreach (var field in fields)
+            {
+                expressions.AddRange(GetFieldOrPropertyDumper(field, what, builder, formatter));
             }
 
             if (expressions.Count > 1)
@@ -141,6 +135,27 @@ namespace ROOT.Shared.Utils.Serialization
             expressions.Add(Expression.Call(formatter, GetEndObjectMethod, builder));
 
             return Expression.Block(expressions);
+        }
+
+        private static IEnumerable<Expression> GetFieldOrPropertyDumper(MemberInfo mi, Expression parent, ParameterExpression builder, ParameterExpression formatter)
+        {
+            yield return Expression.Call(formatter, GetBeginFieldMethod, Expression.Constant(mi.Name, typeof(string)), builder);
+
+            var val = Expression.PropertyOrField(parent, mi.Name);
+
+            Type valueType = (mi as FieldInfo)?.FieldType ?? ((PropertyInfo)mi).PropertyType;
+
+            if (valueType.Namespace == typeof(string).Namespace)
+            {
+                // Built in simple types
+                yield return GetBuiltInTypeExpression(builder, formatter, val, valueType);
+            }
+            else
+            {
+                yield return GetDumperAndDump(formatter, builder, val, valueType);
+            }
+
+            yield return Expression.Call(formatter, GetEndFieldMethod, Expression.Constant(mi.Name, typeof(string)), builder);
         }
 
         private static Expression GetBuiltInTypeExpression(ParameterExpression builder, ParameterExpression formatter, Expression what, Type whatType)
@@ -182,7 +197,7 @@ namespace ROOT.Shared.Utils.Serialization
 
             var loopVar = Expression.Parameter(contained, "loopVar");
 
-            var loopBody =Expression.Block( WriteObject(builder, formatter, loopVar, contained),Expression.Call(formatter, GetWriteArrayValueSepMethod,builder));
+            var loopBody = Expression.Block(WriteObject(builder, formatter, loopVar, contained), Expression.Call(formatter, GetWriteArrayValueSepMethod, builder));
             var loop = ForEach(what, loopVar, loopBody);
             var printIfNotNull = Expression.IfThenElse(
                 IsNull(what),
@@ -195,7 +210,7 @@ namespace ROOT.Shared.Utils.Serialization
 
             return Expression.Block(expressions);
         }
-        
+
         public static Expression ForEach(Expression collection, ParameterExpression loopVar, Expression loopContent)
         {
             var elementType = loopVar.Type;
