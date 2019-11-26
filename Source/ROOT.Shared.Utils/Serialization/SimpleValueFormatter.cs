@@ -90,5 +90,20 @@ namespace ROOT.Shared.Utils.Serialization
         {
             WriteNumber(value, target);
         }
+
+        public void Write(ushort value, StringBuilder target)
+        {
+            WriteNumber(value, target);
+        }
+
+        public void Write(uint value, StringBuilder target)
+        {
+            WriteNumber(value, target);
+        }
+
+        public void Write(ulong value, StringBuilder target)
+        {
+            WriteNumber(value, target);
+        }
     }
 }

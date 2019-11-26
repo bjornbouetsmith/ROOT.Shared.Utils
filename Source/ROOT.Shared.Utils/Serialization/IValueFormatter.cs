@@ -14,7 +14,10 @@ namespace ROOT.Shared.Utils.Serialization
         ITypeFormatter<double>,
         ITypeFormatter<decimal>,
         ITypeFormatter<bool>,
-        ITypeFormatter<Guid>
+        ITypeFormatter<Guid>,
+        ITypeFormatter<ushort>,
+        ITypeFormatter<uint>,
+        ITypeFormatter<ulong>
     {
     }
 }

@@ -107,6 +107,7 @@ namespace ROOT.Shared.Utils.Tests
         public void WithPublicFields()
         {
             var obj = new WithPublicFields(46, 42);
+            obj.UNumber = 123;
 
             Console.WriteLine(obj.Dump());
 
@@ -122,6 +123,8 @@ namespace ROOT.Shared.Utils.Tests
         public readonly string Type = "yes";
 
         private int number;
+
+        public uint UNumber;
 
         public decimal Value { get; set; }
 
