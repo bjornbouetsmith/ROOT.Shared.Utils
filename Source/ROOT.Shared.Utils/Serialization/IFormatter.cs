@@ -8,6 +8,7 @@ namespace ROOT.Shared.Utils.Serialization
         void EndObject(StringBuilder target);
         void BeginField(string fieldName, StringBuilder target);
         void EndField(string fieldName, StringBuilder target);
+        void WriteFieldSep(StringBuilder target);
         void WriteValue<T>(T data, StringBuilder target);
 
         void BeginArray(StringBuilder target);

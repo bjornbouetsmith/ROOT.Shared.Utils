@@ -113,6 +113,24 @@ namespace ROOT.Shared.Utils.Tests
 
             Console.WriteLine(obj.Dump(new JsonFormatter()));
         }
+
+        [TestMethod]
+        public void DictionaryTest()
+        {
+            var withDic = new WithDictionary();
+            withDic.Data = new Dictionary<string, WithNullable>();
+            withDic.Data["test"] = new WithNullable {GuidVal= Guid.Empty};
+
+            Console.WriteLine(withDic.Dump());
+
+            Console.WriteLine(withDic.Dump(new JsonFormatter()));
+        }
+    }
+
+
+    public class WithDictionary
+    {
+        public Dictionary<string, WithNullable> Data { get; set; }
     }
 
     public class WithPublicFields

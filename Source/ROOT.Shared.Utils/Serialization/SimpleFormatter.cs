@@ -42,22 +42,43 @@ namespace ROOT.Shared.Utils.Serialization
     public class SimpleFormatter : IFormatter
     {
         private bool _hasWrittenArrayValueSep;
+        private bool _hasWrittenFieldSep;
+        private bool _hasWrittenBeginField;
         public void BeginObject(StringBuilder target)
         {
         }
 
         public void EndObject(StringBuilder target)
         {
+            if (_hasWrittenFieldSep)
+            {
+                _hasWrittenFieldSep = false;
+                if (target.Length > 0)
+                {
+                    target.Length -= 1;
+                }
+            }
         }
 
         public void BeginField(string fieldName, StringBuilder target)
         {
+            _hasWrittenBeginField = true;
             target.Append(fieldName);
             target.Append(":");
         }
 
         public void EndField(string fieldName, StringBuilder target)
         {
+            if (_hasWrittenBeginField)
+            {
+                _hasWrittenBeginField = false;
+                target.Append("|");
+            }
+        }
+
+        public void WriteFieldSep(StringBuilder target)
+        {
+            _hasWrittenFieldSep = true;
             target.Append(",");
         }
 

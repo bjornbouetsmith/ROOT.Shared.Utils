@@ -28,15 +28,23 @@ namespace ROOT.Shared.Utils.Serialization
 
         private static TypeDumper<T> CreateDumper()
         {
-            if (typeof(T).IsEnum)
+            var type = typeof(T);
+
+            if (type.IsEnum)
             {
                 return new EnumDumper<T>();
             }
 
-            if (typeof(T) == typeof(DateTime))
+            if (type == typeof(DateTime))
             {
                 return (TypeDumper<T>)(object)new DateTimeDumper();
             }
+
+            //if (type.IsConstructedGenericType 
+            //    && typeof(IDictionary).IsAssignableFrom(typeof(IDictionary)))
+            //{
+            //    return new DictionaryDumper<T>();
+            //}
 
             return new ClassDumper<T>();
         }
@@ -104,6 +112,13 @@ namespace ROOT.Shared.Utils.Serialization
                 return GetBuiltInTypeExpression(builder, formatter, what, whatType);
             }
 
+            if (whatType.IsConstructedGenericType
+                && typeof(IDictionary).IsAssignableFrom(whatType))
+            {
+
+                return GetDictionaryExpression(builder, formatter, what, whatType);
+            }
+
             if (whatType.IsArray || whatType.GetInterfaces().Contains(typeof(IEnumerable)))
             {
                 return WriteArrayType(builder, formatter, what, whatType);
@@ -118,18 +133,13 @@ namespace ROOT.Shared.Utils.Serialization
 
             foreach (var prop in props)
             {
-                expressions.AddRange(GetFieldOrPropertyDumper(prop, what, builder, formatter));
+                expressions.Add(GetFieldOrPropertyDumper(prop, what, builder, formatter));
             }
 
             var fields = whatType.GetFields(BindingFlags.Public | BindingFlags.Instance);//.Where(fi => !fi.IsInitOnly);
             foreach (var field in fields)
             {
-                expressions.AddRange(GetFieldOrPropertyDumper(field, what, builder, formatter));
-            }
-
-            if (expressions.Count > 1)
-            {
-                expressions.RemoveAt(expressions.Count - 1);
+                expressions.Add(GetFieldOrPropertyDumper(field, what, builder, formatter));
             }
 
             expressions.Add(Expression.Call(formatter, GetEndObjectMethod, builder));
@@ -137,25 +147,94 @@ namespace ROOT.Shared.Utils.Serialization
             return Expression.Block(expressions);
         }
 
-        private static IEnumerable<Expression> GetFieldOrPropertyDumper(MemberInfo mi, Expression parent, ParameterExpression builder, ParameterExpression formatter)
+
+
+        private static IEnumerable<Expression> GetKeyValueDumper(ParameterExpression builder, ParameterExpression formatter, Expression what, Type kvType)
         {
-            yield return Expression.Call(formatter, GetBeginFieldMethod, Expression.Constant(mi.Name, typeof(string)), builder);
+            var key = Expression.Property(what, kvType.GetProperty("Key", BindingFlags.Public | BindingFlags.Instance));
+            var property = kvType.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+            var val = Expression.Property(what, property);
+
+            yield return Expression.Call(formatter, GetBeginFieldMethod, key, builder);
+            Type valueType = property.PropertyType;
+
+            yield return WriteObject(builder, formatter, val, valueType);
+
+            yield return Expression.Call(formatter, GetEndFieldMethod, key, builder);
+
+
+        }
+
+        private static Expression GetDictionaryExpression(ParameterExpression builder, ParameterExpression formatter, Expression what, Type whatType)
+        {
+            var keyType = whatType.GetGenericArguments()[0];
+            var valueType = whatType.GetGenericArguments()[1];
+
+            Debug.WriteLine($"Creating dictionary dumper for Key:{keyType.FullName} and value:{valueType.FullName}");
+
+
+            List<Expression> expressions = new List<Expression>();
+
+            expressions.Add(Expression.Call(formatter, GetBeginObjectMethod, builder));
+
+            var contained = typeof(KeyValuePair<,>).MakeGenericType(whatType.GetGenericArguments());
+
+            var loopVar = Expression.Parameter(contained, "loopVar");
+
+            var loopBody = Expression.Block(Expression.Block(GetKeyValueDumper(builder, formatter, loopVar, contained)), Expression.Call(formatter, GetWriteFieldSepMethod, builder));
+
+            var loop = ForEach(what, loopVar, loopBody);
+            var printIfNotNull = Expression.IfThenElse(
+                IsNull(what),
+                Expression.Empty(),
+                loop);
+
+            expressions.Add(printIfNotNull);
+
+            expressions.Add(Expression.Call(formatter, GetEndObjectMethod, builder));
+
+            return Expression.Block(expressions);
+
+
+
+            return Expression.Empty();
+        }
+
+        private static Expression GetFieldOrPropertyDumper(MemberInfo mi, Expression parent, ParameterExpression builder, ParameterExpression formatter)
+        {
 
             var val = Expression.PropertyOrField(parent, mi.Name);
 
-            Type valueType = (mi as FieldInfo)?.FieldType ?? ((PropertyInfo)mi).PropertyType;
 
+
+            var beginField = Expression.Call(formatter, GetBeginFieldMethod, Expression.Constant(mi.Name, typeof(string)), builder);
+
+
+
+
+
+            Type valueType = (mi as FieldInfo)?.FieldType ?? ((PropertyInfo)mi).PropertyType;
+            Expression value;
             if (valueType.Namespace == typeof(string).Namespace)
             {
                 // Built in simple types
-                yield return GetBuiltInTypeExpression(builder, formatter, val, valueType);
+                value = GetBuiltInTypeExpression(builder, formatter, val, valueType);
             }
             else
             {
-                yield return GetDumperAndDump(formatter, builder, val, valueType);
+                value = GetDumperAndDump(formatter, builder, val, valueType);
             }
 
-            yield return Expression.Call(formatter, GetEndFieldMethod, Expression.Constant(mi.Name, typeof(string)), builder);
+            var endField = Expression.Call(formatter, GetEndFieldMethod, Expression.Constant(mi.Name, typeof(string)), builder);
+
+            var fieldSep = Expression.Call(formatter, GetWriteFieldSepMethod, builder);
+
+            var dump = Expression.Block(beginField, value, endField, fieldSep);
+            return Expression.IfThenElse(
+                IsNull(val),
+                Expression.Empty(),
+                dump);
+
         }
 
         private static Expression GetBuiltInTypeExpression(ParameterExpression builder, ParameterExpression formatter, Expression what, Type whatType)
@@ -171,6 +250,7 @@ namespace ROOT.Shared.Utils.Serialization
         private static readonly MethodInfo GetBeginArrayMethod = typeof(IFormatter).GetMethod(nameof(IFormatter.BeginArray));
         private static readonly MethodInfo GetEndArrayMethod = typeof(IFormatter).GetMethod(nameof(IFormatter.EndArray));
         private static readonly MethodInfo GetWriteArrayValueSepMethod = typeof(IFormatter).GetMethod(nameof(IFormatter.WriteArrayValueSep));
+        private static readonly MethodInfo GetWriteFieldSepMethod = typeof(IFormatter).GetMethod(nameof(IFormatter.WriteFieldSep));
 
 
 

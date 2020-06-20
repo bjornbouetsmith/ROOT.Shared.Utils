@@ -6,7 +6,7 @@ namespace ROOT.Shared.Utils.Serialization
     public static class JsonFormatter<T>
     {
         private static ITypeFormatter<T> _instance;
-        public static ITypeFormatter<T> Instance => _instance ?? (_instance = GetInstance());
+        public static ITypeFormatter<T> Instance => _instance ??= GetInstance();
 
         private static ITypeFormatter<T> GetInstance()
         {
@@ -30,7 +30,7 @@ namespace ROOT.Shared.Utils.Serialization
     public class JsonFormatter : IFormatter
     {
         private bool _hasWrittenArrayValueSep;
-
+        private bool _hasWrittenFieldSep;
 
         public void BeginObject(StringBuilder target)
         {
@@ -39,6 +39,15 @@ namespace ROOT.Shared.Utils.Serialization
 
         public void EndObject(StringBuilder target)
         {
+            if (_hasWrittenFieldSep)
+            {
+                _hasWrittenFieldSep = false;
+                if (target.Length > 0)
+                {
+                    target.Length -= 1;
+                }
+            }
+
             target.Append("}");
         }
 
@@ -51,6 +60,12 @@ namespace ROOT.Shared.Utils.Serialization
 
         public void EndField(string fieldName, StringBuilder target)
         {
+            //target.Append(",");
+        }
+
+        public void WriteFieldSep(StringBuilder target)
+        {
+            _hasWrittenFieldSep = true;
             target.Append(",");
         }
 
