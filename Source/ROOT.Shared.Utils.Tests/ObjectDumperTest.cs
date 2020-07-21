@@ -22,8 +22,9 @@ namespace ROOT.Shared.Utils.Tests
         [TestMethod]
         public void DateTimeDump()
         {
-            var dt = new DateTime(2019, 06, 06);
-            string expected = "2019-06-06 12:00:00.000";
+            var dt = new DateTime(2019, 06, 06, 0, 0, 0);
+            dt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            string expected = "2019-06-06T00:00:00.000Z";
             var str = dt.Dump();
             Console.WriteLine(str);
             Assert.AreEqual(expected, str);
@@ -33,7 +34,7 @@ namespace ROOT.Shared.Utils.Tests
         public void SimpleClass()
         {
             var outer = new Outer();
-            outer.Inner = new Inner { Empty=new EmptyClass(),My = MyEnum.Value1};
+            outer.Inner = new Inner { Empty = new EmptyClass(), My = MyEnum.Value1 };
 
             var str = outer.Dump();
 
@@ -86,8 +87,8 @@ namespace ROOT.Shared.Utils.Tests
         public void ArrayTypes()
         {
             var withArr = new ClassWithArrayAndIEnumerable();
-            withArr.Values = new[] {"First", "Secpmd"};
-            withArr.IntValues = new List<int> {1, 2, 3};
+            withArr.Values = new[] { "First", "Secpmd" };
+            withArr.IntValues = new List<int> { 1, 2, 3 };
 
             Console.WriteLine(withArr.Dump(new SimpleFormatter()));
         }
@@ -119,7 +120,7 @@ namespace ROOT.Shared.Utils.Tests
         {
             var withDic = new WithDictionary();
             withDic.Data = new Dictionary<string, WithNullable>();
-            withDic.Data["test"] = new WithNullable {GuidVal= Guid.Empty};
+            withDic.Data["test"] = new WithNullable { GuidVal = Guid.Empty };
 
             Console.WriteLine(withDic.Dump());
 

@@ -6,7 +6,7 @@ namespace ROOT.Shared.Utils.Serialization
 {
     public class DateTimeDumper : TypeDumper<DateTime>
     {
-        private static readonly string Format = "yyyy-MM-dd hh:mm:ss.fff";
+        private static readonly string Format = "yyyy-MM-ddTHH:mm:ss.fffK";
         public override string Dump(object what)
         {
             return Dump((DateTime)what); ;
