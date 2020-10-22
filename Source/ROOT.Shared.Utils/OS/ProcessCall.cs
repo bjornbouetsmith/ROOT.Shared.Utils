@@ -22,6 +22,12 @@ namespace ROOT.Shared.Utils.OS
     }
 
 
+    /// <summary>
+    /// Remote process call.
+    /// using sudo requires no password required for sudo command
+    /// i.e. [username]  ALL=(ALL)       NOPASSWD: ALL
+    /// in /etc/sudoers
+    /// </summary>
     public class RemoteProcessCall : ProcessCall
     {
         public bool RequiresSudo { get; }
@@ -37,6 +43,7 @@ namespace ROOT.Shared.Utils.OS
             return first.Pipe(second);
         }
     }
+
     public class ProcessCall
     {
         public string BinPath { get; }

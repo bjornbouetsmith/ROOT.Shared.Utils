@@ -40,6 +40,18 @@ namespace ROOT.Shared.Utils.Serialization
                 return (TypeDumper<T>)(object)new DateTimeDumper();
             }
 
+            bool isEnumerable = type.GetInterfaces().Any(x =>
+                x.IsGenericType &&
+                x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+
+            if (isEnumerable)
+            {
+                var contained = type.GetGenericArguments()[0];
+                var dumperType = typeof(TypeDumper<>).MakeGenericType(contained);
+                
+                return (TypeDumper<T>)Activator.CreateInstance(dumperType); //(object)new EnumerableDumper<T>();
+            }
+
             //if (type.IsConstructedGenericType 
             //    && typeof(IDictionary).IsAssignableFrom(typeof(IDictionary)))
             //{

@@ -11,6 +11,25 @@ namespace ROOT.Shared.Utils.Tests
     public class ObjectDumperTest
     {
         [TestMethod]
+        public void EnumerableIntDump()
+        {
+            IEnumerable<int> vals = new[] {1, 2, 3};
+
+            var dumper = new EnumerableDumper<int>();
+            var content = dumper.Dump(vals,new JsonFormatter());
+            Console.WriteLine(content);
+        }
+        [TestMethod]
+        public void EnumerableClassDump()
+        {
+            IEnumerable<WithPublicFields> vals = new[] { new WithPublicFields(1, 2),new WithPublicFields(3,4) };
+
+            var str = vals.Dump(new JsonFormatter());
+            Console.WriteLine(str);
+            
+        }
+
+        [TestMethod]
         public void SimpleDump()
         {
             var expected = "Hello world";
