@@ -139,7 +139,7 @@ namespace ROOT.Shared.Utils.Serialization
 
             List<Expression> expressions = new List<Expression>();
 
-            var props = whatType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(pi => pi.CanRead && pi.CanWrite);
+            var props = whatType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(pi => pi.CanRead);
 
             expressions.Add(Expression.Call(formatter, GetBeginObjectMethod, builder));
 
