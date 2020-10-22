@@ -14,12 +14,22 @@ namespace ROOT.Shared.Utils.OS
         public static string BinPath => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsSSh : UnixSsh;
     }
 
+    public static class Sudo
+    {
+        const string WindowsSudo = "/usr/bin/sudo";
+        private const string UnixSudo = "/usr/bin/sudo";
+        public static string BinPath => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsSudo : UnixSudo;
+    }
+
 
     public class RemoteProcessCall : ProcessCall
     {
-        public RemoteProcessCall(string username, string hostName)
+        public bool RequiresSudo { get; }
+
+        public RemoteProcessCall(string username, string hostName, bool requiresSudo = false)
             : base(SSH.BinPath, $"{username}@{hostName}")
         {
+            RequiresSudo = requiresSudo;
         }
 
         public static ProcessCall operator |(RemoteProcessCall first, ProcessCall second)
@@ -127,7 +137,7 @@ namespace ROOT.Shared.Utils.OS
                 throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
             }
 
-            string args = string.Concat("/c", " ", processCall.BinPath, " ", processCall.Arguments, " \"", other.BinPath, " ", other.Arguments, "\"").Trim();
+            string args = string.Concat("/c", " ", processCall.BinPath, " ", processCall.Arguments, " \"", processCall.RequiresSudo ? Sudo.BinPath : "", " ", other.BinPath, " ", other.Arguments, "\"").Trim();
 
             return new ProcessCall(Shell, args);
         }

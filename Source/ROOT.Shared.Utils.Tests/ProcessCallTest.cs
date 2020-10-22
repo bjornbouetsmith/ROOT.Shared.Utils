@@ -60,23 +60,23 @@ namespace ROOT.Shared.Utils.Tests
 
             call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
 
-            
+
             var response = call.LoadResponse();
             Assert.IsTrue(response.Success);
             Console.WriteLine(response.StdOut);
             Assert.AreEqual("-YD Enables the disk performance counters for physical drives.", response.StdOut.Trim());
-            
+
 
         }
         [TestMethod]
         public void RemoteProcessCall()
         {
-            var remote = new RemoteProcessCall("bbs", "zfsdev.root.dom");
+            var remote = new RemoteProcessCall("bbs", "zfsdev.root.dom", true);
 
             var full = remote | new ProcessCall("/usr/sbin/zfs", "get all");
 
             Console.WriteLine(full.FullCommandLine);
-            
+
         }
     }
 }
