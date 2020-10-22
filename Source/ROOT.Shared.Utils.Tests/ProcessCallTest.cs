@@ -68,6 +68,15 @@ namespace ROOT.Shared.Utils.Tests
             
 
         }
+        [TestMethod]
+        public void RemoteProcessCall()
+        {
+            var remote = new RemoteProcessCall("bbs", "zfsdev.root.dom");
 
+            var full = remote | new ProcessCall("/usr/sbin/zfs", "get all");
+
+            Console.WriteLine(full.FullCommandLine);
+            
+        }
     }
 }

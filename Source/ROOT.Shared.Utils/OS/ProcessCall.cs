@@ -5,6 +5,28 @@ using System.Runtime.InteropServices;
 
 namespace ROOT.Shared.Utils.OS
 {
+    public static class SSH
+    {
+        const string WindowsSSh = "C:\\Windows\\System32\\OpenSSH\\ssh.exe";
+        private const string UnixSsh = "/usr/bin/ssh";
+
+
+        public static string BinPath => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsSSh : UnixSsh;
+    }
+
+
+    public class RemoteProcessCall : ProcessCall
+    {
+        public RemoteProcessCall(string username, string hostName)
+            : base(SSH.BinPath, $"{username}@{hostName}")
+        {
+        }
+
+        public static ProcessCall operator |(RemoteProcessCall first, ProcessCall second)
+        {
+            return first.Pipe(second);
+        }
+    }
     public class ProcessCall
     {
         public string BinPath { get; }
@@ -94,6 +116,18 @@ namespace ROOT.Shared.Utils.OS
             }
 
             string args = string.Concat("/c", " ", processCall.BinPath, " ", processCall.Arguments, " | ", other.BinPath, " ", other.Arguments).Trim();
+
+            return new ProcessCall(Shell, args);
+        }
+
+        public static ProcessCall Pipe(this RemoteProcessCall processCall, ProcessCall other)
+        {
+            if (processCall.Started || other.Started)
+            {
+                throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
+            }
+
+            string args = string.Concat("/c", " ", processCall.BinPath, " ", processCall.Arguments, " \"", other.BinPath, " ", other.Arguments, "\"").Trim();
 
             return new ProcessCall(Shell, args);
         }
