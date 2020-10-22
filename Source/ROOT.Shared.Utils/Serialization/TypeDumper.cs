@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -39,24 +40,6 @@ namespace ROOT.Shared.Utils.Serialization
             {
                 return (TypeDumper<T>)(object)new DateTimeDumper();
             }
-
-            bool isEnumerable = type.GetInterfaces().Any(x =>
-                x.IsGenericType &&
-                x.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-
-            if (isEnumerable && type != typeof(string))
-            {
-                var contained = type.GetGenericArguments()[0];
-                var dumperType = typeof(TypeDumper<>).MakeGenericType(contained);
-
-                return (TypeDumper<T>)Activator.CreateInstance(dumperType); //(object)new EnumerableDumper<T>();
-            }
-
-            //if (type.IsConstructedGenericType 
-            //    && typeof(IDictionary).IsAssignableFrom(typeof(IDictionary)))
-            //{
-            //    return new DictionaryDumper<T>();
-            //}
 
             return new ClassDumper<T>();
         }
@@ -223,7 +206,8 @@ namespace ROOT.Shared.Utils.Serialization
 
             Type valueType = (mi as FieldInfo)?.FieldType ?? ((PropertyInfo)mi).PropertyType;
             Expression value;
-            if (valueType.Namespace == typeof(string).Namespace)
+            if (valueType.Namespace == typeof(string).Namespace
+                && !valueType.IsArray)
             {
                 // Built in simple types
                 value = GetBuiltInTypeExpression(builder, formatter, val, valueType);

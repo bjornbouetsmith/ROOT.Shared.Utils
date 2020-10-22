@@ -11,12 +11,22 @@ namespace ROOT.Shared.Utils.Tests
     public class ObjectDumperTest
     {
         [TestMethod]
+        public void ClassWithArray()
+        {
+            var data = new WithArrayOfStrings("first", "second");
+
+            var content = data.Dump(new JsonFormatter());
+
+            Console.WriteLine(content);
+        }
+
+        [TestMethod]
         public void EnumerableIntDump()
         {
             IEnumerable<int> vals = new[] {1, 2, 3};
 
-            var dumper = new EnumerableDumper<int>();
-            var content = dumper.Dump(vals,new JsonFormatter());
+            
+            var content = vals.Dump(new JsonFormatter());
             Console.WriteLine(content);
         }
         [TestMethod]
@@ -151,6 +161,15 @@ namespace ROOT.Shared.Utils.Tests
     public class WithDictionary
     {
         public Dictionary<string, WithNullable> Data { get; set; }
+    }
+
+    public class WithArrayOfStrings
+    {
+        public WithArrayOfStrings(params string[] validValues)
+        {
+            ValidValues = validValues;
+        }
+        public string[] ValidValues { get; }
     }
 
     public class WithPublicFields
