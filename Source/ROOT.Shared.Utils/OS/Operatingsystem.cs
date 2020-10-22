@@ -17,7 +17,7 @@ namespace ROOT.Shared.Utils.OS
         public static string Description => RuntimeInformation.OSDescription;
 
         private static LinuxType? _linuxType;
-        public static LinuxType LinuxType => (_linuxType ?? (_linuxType = GetLinuxType(Description))).Value;
+        public static LinuxType LinuxType => _linuxType ??= GetLinuxType(Description);
 
         private static LinuxType GetLinuxType(string description)
         {
@@ -67,7 +67,7 @@ namespace ROOT.Shared.Utils.OS
         }
 
         private static ServiceInit? _serviceInit;
-        public static ServiceInit ServiceInit => (_serviceInit ?? (_serviceInit = GetServiceInit())).Value;
+        public static ServiceInit ServiceInit => _serviceInit ??= GetServiceInit();
 
         private static ServiceInit GetServiceInit()
         {

@@ -39,6 +39,21 @@ namespace ROOT.Shared.Utils.Tests
         }
 
         [TestMethod]
+        public void PipeTestGeneration2()
+        {
+            var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");
+
+            call |= new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD");
+
+            //call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
+
+
+            Assert.AreEqual(call.FullCommandLine, "C:\\Windows\\System32\\cmd.exe /c C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD");
+
+            Console.WriteLine(call.FullCommandLine);
+        }
+
+        [TestMethod]
         public void PipeExecution()
         {
             var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");

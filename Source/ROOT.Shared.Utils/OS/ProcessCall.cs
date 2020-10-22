@@ -72,6 +72,11 @@ namespace ROOT.Shared.Utils.OS
                 }
             }
         }
+
+        public static ProcessCall operator |(ProcessCall first, ProcessCall second)
+        {
+            return first.Pipe(second);
+        }
     }
 
     public static class ProcessCallExtensions

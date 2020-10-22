@@ -194,10 +194,6 @@ namespace ROOT.Shared.Utils.Serialization
             expressions.Add(Expression.Call(formatter, GetEndObjectMethod, builder));
 
             return Expression.Block(expressions);
-
-
-
-            return Expression.Empty();
         }
 
         private static Expression GetFieldOrPropertyDumper(MemberInfo mi, Expression parent, ParameterExpression builder, ParameterExpression formatter)
