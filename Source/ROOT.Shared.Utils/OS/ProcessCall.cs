@@ -127,6 +127,11 @@ namespace ROOT.Shared.Utils.OS
 
         public static ProcessCall Pipe(this ProcessCall processCall, ProcessCall other)
         {
+            if (processCall is RemoteProcessCall remote)
+            {
+                return Pipe(remote, other);
+            }
+
             if (processCall.Started || other.Started)
             {
                 throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
