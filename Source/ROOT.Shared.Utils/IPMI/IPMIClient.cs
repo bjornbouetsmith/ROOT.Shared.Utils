@@ -1,0 +1,118 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
+using ROOT.Shared.Utils.OS;
+
+namespace ROOT.Shared.Utils.IPMI
+{
+    /// <summary>
+    /// IPMI_PASSWORD environment variable can be set to not use password.
+    /// </summary>
+    public class IPMIClient
+    {
+        private readonly string _hostName;
+        private readonly string _userNam;
+        private readonly string _password;
+        private readonly string _ipmiInterface;
+        private readonly bool _usePasswordFromEnv;
+        private readonly IPMIParser _parser = new IPMIParser();
+        public IPMIClient(string hostName, string userNam, string password, string ipmiInterface = "lanplus", bool usePasswordFromEnv = false)
+        {
+            _hostName = hostName;
+            _userNam = userNam;
+            _password = password;
+            _ipmiInterface = ipmiInterface;
+            _usePasswordFromEnv = usePasswordFromEnv;
+            if (usePasswordFromEnv && string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException($"Please specify password or set {nameof(usePasswordFromEnv)} to true");
+            }
+        }
+
+        public IEnumerable<IPMISensorRecord> LoadSensorReadings(RemoteProcessCall remoteCall = null)
+        {
+            var pc = GetIPMISensorRecordsProcessCall();
+            if (remoteCall != null)
+            {
+                pc = remoteCall | pc;
+            }
+
+            //pc.Timeout = TimeSpan.FromSeconds(30);
+            var resp = pc.LoadResponse();
+            if (!resp.Success)
+            {
+                throw resp.ToException();
+            }
+
+            var data = resp.StdOut;
+
+            return _parser.ParseSensorReadings(data);
+        }
+
+        public IEnumerable<Sensor> LoadSensors(RemoteProcessCall remoteCall = null)
+        {
+            var pc = GetIPMISensorListProcessCall();
+            if (remoteCall != null)
+            {
+                pc = remoteCall | pc;
+            }
+
+            var resp = pc.LoadResponse();
+            if (!resp.Success)
+            {
+                throw resp.ToException();
+            }
+
+            var data = resp.StdOut;
+
+            return _parser.ParseSensorIds(data);
+        }
+
+        private ProcessCall GetIPMISensorListProcessCall()
+        {
+            var args = $"-I {_ipmiInterface} -H {_hostName} -U {_userNam}";
+            if (_usePasswordFromEnv)
+            {
+                args += $" -E sensor -v";
+            }
+            else
+            {
+                args += $" -P {_password} sensor -v";
+            }
+
+            var pc = new ProcessCall("/usr/bin/ipmitool", args) | new ProcessCall("/usr/bin/grep", "'Sensor ID'");
+
+            return pc;
+        }
+        private ProcessCall GetIPMISensorRecordsProcessCall()
+        {
+            var args = $"-I {_ipmiInterface} -H {_hostName} -U {_userNam}";
+            if (_usePasswordFromEnv)
+            {
+                args += $" -E sensor";
+            }
+            else
+            {
+                args += $" -P {_password} sensor";
+            }
+
+            return new ProcessCall("/usr/bin/ipmitool", args);
+        }
+
+        private ProcessCall GetIPMISensorValuesProcessCall()
+        {
+            var args = $"-I {_ipmiInterface} -H {_hostName} -U {_userNam}";
+            if (_usePasswordFromEnv)
+            {
+                args += $" -E sensor";
+            }
+            else
+            {
+                args += $" -P {_password} sdr";
+            }
+
+            return new ProcessCall("/usr/bin/ipmitool", args);
+        }
+    }
+}

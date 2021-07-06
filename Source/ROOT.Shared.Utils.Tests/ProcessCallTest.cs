@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ROOT.Shared.Utils.OS;
 
@@ -33,7 +28,7 @@ namespace ROOT.Shared.Utils.Tests
             call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
 
 
-            Assert.AreEqual(call.FullCommandLine, "C:\\Windows\\System32\\cmd.exe /c C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD");
+            Assert.AreEqual("C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD", call.FullCommandLine);
 
             Console.WriteLine(call.FullCommandLine);
         }
@@ -45,10 +40,8 @@ namespace ROOT.Shared.Utils.Tests
 
             call |= new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD");
 
-            //call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
-
-
-            Assert.AreEqual(call.FullCommandLine, "C:\\Windows\\System32\\cmd.exe /c C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD");
+        
+            Assert.AreEqual("C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD", call.FullCommandLine);
 
             Console.WriteLine(call.FullCommandLine);
         }
@@ -85,7 +78,9 @@ namespace ROOT.Shared.Utils.Tests
 
             var full = remote | new ProcessCall("/usr/sbin/zfs", "get all");
 
+            var exe = full.Execute();
             Console.WriteLine(full.FullCommandLine);
+            Console.WriteLine(exe.FullCommandLine);
 
         }
     }
