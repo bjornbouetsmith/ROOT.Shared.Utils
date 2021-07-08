@@ -12,7 +12,7 @@ namespace ROOT.Shared.Utils.Tests.IPMI
     [TestClass]
     public class IPMIClientTest
     {
-        [TestMethod]
+        [TestMethod,Timeout(10000)]
         public void LoadSensorIDs()
         {
 
@@ -29,7 +29,7 @@ namespace ROOT.Shared.Utils.Tests.IPMI
 
         }
 
-        [TestMethod]
+        [TestMethod, Timeout(10000)]
         public void LoadSensorRecords()
         {
 
