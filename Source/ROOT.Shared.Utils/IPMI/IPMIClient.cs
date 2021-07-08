@@ -16,14 +16,16 @@ namespace ROOT.Shared.Utils.IPMI
         private readonly string _password;
         private readonly string _ipmiInterface;
         private readonly bool _usePasswordFromEnv;
+        private readonly int _timeOutSeconds;
         private readonly IPMIParser _parser = new IPMIParser();
-        public IPMIClient(string hostName, string userNam, string password, string ipmiInterface = "lanplus", bool usePasswordFromEnv = false)
+        public IPMIClient(string hostName, string userNam, string password, string ipmiInterface = "lanplus", bool usePasswordFromEnv = false, int timeOutSeconds=10)
         {
             _hostName = hostName;
             _userNam = userNam;
             _password = password;
             _ipmiInterface = ipmiInterface;
             _usePasswordFromEnv = usePasswordFromEnv;
+            _timeOutSeconds = timeOutSeconds;
             if (usePasswordFromEnv && string.IsNullOrWhiteSpace(password))
             {
                 throw new ArgumentException($"Please specify password or set {nameof(usePasswordFromEnv)} to true");
@@ -38,7 +40,7 @@ namespace ROOT.Shared.Utils.IPMI
                 pc = remoteCall | pc;
             }
 
-            //pc.Timeout = TimeSpan.FromSeconds(30);
+            pc.Timeout = TimeSpan.FromSeconds(_timeOutSeconds);
             var resp = pc.LoadResponse();
             if (!resp.Success)
             {
