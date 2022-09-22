@@ -12,7 +12,7 @@ namespace ROOT.Shared.Utils.Tests.IPMI
     [TestClass]
     public class IPMIClientTest
     {
-        [TestMethod,Timeout(10000)]
+        [TestMethod,Timeout(10000),Ignore]
         public void LoadSensorIDs()
         {
 
@@ -29,10 +29,9 @@ namespace ROOT.Shared.Utils.Tests.IPMI
 
         }
 
-        [TestMethod, Timeout(10000)]
+        [TestMethod, Timeout(10000),Ignore]
         public void LoadSensorRecords()
         {
-
             var client = new IPMIClient("192.168.10.253", "ADMIN", "ADMIN");
 
             var remotePc = new RemoteProcessCall("bbs", "192.168.0.150");

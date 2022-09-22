@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 using ROOT.Shared.Utils.OS;
 
 namespace ROOT.Shared.Utils.IPMI
