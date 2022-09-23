@@ -334,7 +334,7 @@ namespace ROOT.Shared.Utils.OS
                 throw new InvalidOperationException("Cannot execute  process that has been started");
             }
 
-            var prefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/Q /C" : "/c";
+            var prefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/Q /C" : "-c";
 
             string args = string.Concat(prefix, " ", processCall.BinPath, " ", processCall.Arguments).Trim();
 
