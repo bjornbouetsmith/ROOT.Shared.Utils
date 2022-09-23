@@ -63,6 +63,10 @@ namespace ROOT.Shared.Utils.Tests
         [TestMethod]
         public void PipeExecution()
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
             var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");
 
             call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
