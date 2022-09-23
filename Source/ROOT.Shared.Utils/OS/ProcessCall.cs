@@ -171,6 +171,7 @@ namespace ROOT.Shared.Utils.OS
         public string Arguments { get; }
         public string FullCommandLine { get; }
         public string Shell { get; set; }
+        public bool UseShell { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(5);
 
         public ProcessCall(string binPath, string arguments = "")
@@ -288,8 +289,8 @@ namespace ROOT.Shared.Utils.OS
 
     public static class ProcessCallExtensions
     {
-        const string WindowsShell = "C:\\Windows\\System32\\cmd.exe";
-        private const string UnixShell = "/bin/bash";
+        public const string WindowsShell = "C:\\Windows\\System32\\cmd.exe";
+        public const string UnixShell = "/bin/bash";
 
         private static readonly string Shell = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsShell : UnixShell;
 
@@ -334,9 +335,11 @@ namespace ROOT.Shared.Utils.OS
                 throw new InvalidOperationException("Cannot execute  process that has been started");
             }
 
-            var prefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/Q /C" : "-c";
-
-            string args = string.Concat(prefix, " ", processCall.BinPath, " ", processCall.Arguments).Trim();
+            if (!processCall.UseShell)
+            {
+                return processCall;
+            }
+            string args = string.Concat(ShellPrefix, " \"", processCall.BinPath, " ", processCall.Arguments,"\"").Trim();
 
             var shell = processCall.Shell ?? Shell;
             return new ProcessCall(shell, args);
@@ -346,6 +349,10 @@ namespace ROOT.Shared.Utils.OS
         {
             return new ProcessCallException(result.CommandLine, result.ExitCode, result.StdOut, result.StdError);
         }
+
+        public const string WindowsShellPrefix = "/Q /C";
+        public const string UnixShellPrefix = "-c";
+        public static string ShellPrefix { get; set; }= RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsShellPrefix : UnixShellPrefix;
     }
 
     [Serializable]

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ROOT.Shared.Utils.OS;
 
@@ -8,10 +9,14 @@ namespace ROOT.Shared.Utils.Tests
     public class ProcessCallTest
     {
         [TestMethod]
-        public void SimpleCall()
+        public void SimpleCallWindows()
         {
-
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
             var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe");
+            Console.WriteLine(call.Execute().FullCommandLine);
 
             var result = call.LoadResponse("/?");
 
@@ -21,8 +26,12 @@ namespace ROOT.Shared.Utils.Tests
         }
 
         [TestMethod]
-        public void PipeTestGeneration()
+        public void PipeTestGenerationWindows()
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
             var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");
 
             call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
@@ -31,6 +40,11 @@ namespace ROOT.Shared.Utils.Tests
             Assert.AreEqual("C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD", call.FullCommandLine);
 
             Console.WriteLine(call.FullCommandLine);
+            Console.WriteLine(call.Execute().FullCommandLine);
+            var result = call.LoadResponse();
+
+            Assert.IsTrue(result.Success);
+            Console.WriteLine(result.StdOut);
         }
 
         [TestMethod]
@@ -40,7 +54,7 @@ namespace ROOT.Shared.Utils.Tests
 
             call |= new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD");
 
-        
+
             Assert.AreEqual("C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD", call.FullCommandLine);
 
             Console.WriteLine(call.FullCommandLine);
@@ -82,6 +96,23 @@ namespace ROOT.Shared.Utils.Tests
             Console.WriteLine(full.FullCommandLine);
             Console.WriteLine(exe.FullCommandLine);
 
+        }
+
+        [TestMethod]
+        [DataRow(true, ProcessCallExtensions.WindowsShell, ProcessCallExtensions.WindowsShellPrefix)]
+        [DataRow(false, ProcessCallExtensions.WindowsShell, ProcessCallExtensions.WindowsShellPrefix)]
+        [DataRow(true, ProcessCallExtensions.UnixShell, ProcessCallExtensions.UnixShellPrefix)]
+        [DataRow(false, ProcessCallExtensions.UnixShell,ProcessCallExtensions.UnixShellPrefix)]
+        public void ProcessCallExecuteTest(bool useShell, string shell, string shellPrefix)
+        {
+            ProcessCallExtensions.ShellPrefix = shellPrefix;
+            var pc = new ProcessCall("/usr/sbin/zfs", "list") | new ProcessCall("/usr/bin/grep", "MOUNT");
+            pc.UseShell = useShell;
+            pc.Shell = shell;
+            var cmd = pc.Execute();
+            Console.WriteLine(cmd.FullCommandLine);
+            var expected = useShell ? $"{shell} {shellPrefix} \"/usr/sbin/zfs list | /usr/bin/grep MOUNT\"" : "/usr/sbin/zfs list | /usr/bin/grep MOUNT";
+            Assert.AreEqual(expected, cmd.FullCommandLine);
         }
     }
 }
