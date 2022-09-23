@@ -119,7 +119,7 @@ namespace ROOT.Shared.Utils.OS
             }
 
             ExitCode = success ? _process.ExitCode : -1;
-            
+
             do
             {
             } while (!_outEvent.Wait(_timeout));
@@ -334,7 +334,9 @@ namespace ROOT.Shared.Utils.OS
                 throw new InvalidOperationException("Cannot execute  process that has been started");
             }
 
-            string args = string.Concat("/Q /C", " ", processCall.BinPath, " ", processCall.Arguments).Trim();
+            var prefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/Q /C" : "/c";
+
+            string args = string.Concat(prefix, " ", processCall.BinPath, " ", processCall.Arguments).Trim();
 
             var shell = processCall.Shell ?? Shell;
             return new ProcessCall(shell, args);
