@@ -106,7 +106,7 @@ namespace ROOT.Shared.Utils.Tests
         [DataRow(true, ProcessCallExtensions.WindowsShell, ProcessCallExtensions.WindowsShellPrefix)]
         [DataRow(false, ProcessCallExtensions.WindowsShell, ProcessCallExtensions.WindowsShellPrefix)]
         [DataRow(true, ProcessCallExtensions.UnixShell, ProcessCallExtensions.UnixShellPrefix)]
-        [DataRow(false, ProcessCallExtensions.UnixShell,ProcessCallExtensions.UnixShellPrefix)]
+        [DataRow(false, ProcessCallExtensions.UnixShell, ProcessCallExtensions.UnixShellPrefix)]
         public void ProcessCallExecuteTest(bool useShell, string shell, string shellPrefix)
         {
             ProcessCallExtensions.ShellPrefix = shellPrefix;
@@ -117,6 +117,28 @@ namespace ROOT.Shared.Utils.Tests
             Console.WriteLine(cmd.FullCommandLine);
             var expected = useShell ? $"{shell} {shellPrefix} \"/usr/sbin/zfs list | /usr/bin/grep MOUNT\"" : "/usr/sbin/zfs list | /usr/bin/grep MOUNT";
             Assert.AreEqual(expected, cmd.FullCommandLine);
+        }
+
+        [TestMethod]
+        public void PipeLeftNullsTest()
+        {
+            ProcessCall pc = null;
+
+            pc |= new ProcessCall("/sbin/zfs", "list");
+
+            Console.WriteLine(pc.FullCommandLine);
+            Assert.AreEqual("/sbin/zfs list", pc.FullCommandLine);
+        }
+
+        [TestMethod]
+        public void PipeRightNullsTest()
+        {
+            ProcessCall pc = new ProcessCall("/sbin/zfs", "list");
+
+            pc |= null;
+
+            Console.WriteLine(pc.FullCommandLine);
+            Assert.AreEqual("/sbin/zfs list", pc.FullCommandLine);
         }
     }
 }

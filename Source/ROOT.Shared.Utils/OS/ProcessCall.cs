@@ -41,6 +41,16 @@ namespace ROOT.Shared.Utils.OS
 
         public static ProcessCall operator |(RemoteProcessCall first, ProcessCall second)
         {
+            if (first == null)
+            {
+                return second;
+            }
+
+            if (second == null)
+            {
+                return first;
+            }
+
             return first.Pipe(second);
         }
     }
@@ -134,6 +144,15 @@ namespace ROOT.Shared.Utils.OS
 
         public static ProcessCall operator |(ProcessCall first, ProcessCall second)
         {
+            if (first == null)
+            {
+                return second;
+            }
+
+            if (second == null)
+            {
+                return first;
+            }
             return first.Pipe(second);
         }
     }
