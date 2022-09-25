@@ -99,6 +99,7 @@ namespace ROOT.Shared.Utils.OS
 
 
             reader.Wait();
+            Trace.TraceInformation($"Command: {FullCommandLine} success");
             var exitCode = reader.ExitCode;
 
             var stdOut = reader.Output?.ReadToEnd();
