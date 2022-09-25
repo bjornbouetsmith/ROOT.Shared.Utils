@@ -18,7 +18,7 @@ namespace ROOT.Shared.Utils.Tests.IPMI
 
             var client = new IPMIClient("192.168.10.253", "ADMIN", "ADMIN");
 
-            var remotePc = new RemoteProcessCall("bbs", "192.168.0.150");
+            var remotePc = new SSHProcessCall("bbs", "192.168.0.150");
 
             var data = client.LoadSensors(remotePc).ToList();
 
@@ -34,7 +34,7 @@ namespace ROOT.Shared.Utils.Tests.IPMI
         {
             var client = new IPMIClient("192.168.10.253", "ADMIN", "ADMIN");
 
-            var remotePc = new RemoteProcessCall("bbs", "192.168.0.150");
+            var remotePc = new SSHProcessCall("bbs", "192.168.0.150");
 
             var sensors = client.LoadSensors(remotePc).ToList();
             var data = client.LoadSensorReadings(remotePc).ToList();

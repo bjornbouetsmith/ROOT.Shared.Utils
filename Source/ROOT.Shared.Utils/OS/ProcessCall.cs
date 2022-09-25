@@ -6,55 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace ROOT.Shared.Utils.OS
 {
-    public static class SSH
-    {
-        const string WindowsSSh = "C:\\Windows\\System32\\OpenSSH\\ssh.exe";
-        private const string UnixSsh = "/usr/bin/ssh";
-
-
-        public static string BinPath => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsSSh : UnixSsh;
-    }
-
-    public static class Sudo
-    {
-        const string WindowsSudo = "/usr/bin/sudo";
-        private const string UnixSudo = "/usr/bin/sudo";
-        public static string BinPath => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsSudo : UnixSudo;
-    }
-
-
-    /// <summary>
-    /// Remote process call.
-    /// using sudo requires no password required for sudo command
-    /// i.e. [username]  ALL=(ALL)       NOPASSWD: ALL
-    /// in /etc/sudoers
-    /// </summary>
-    public class RemoteProcessCall : ProcessCall
-    {
-        public bool RequiresSudo { get; }
-
-        public RemoteProcessCall(string username, string hostName, bool requiresSudo = false)
-            : base(SSH.BinPath, $"{username}@{hostName}")
-        {
-            RequiresSudo = requiresSudo;
-        }
-
-        public static ProcessCall operator |(RemoteProcessCall first, ProcessCall second)
-        {
-            if (first == null)
-            {
-                return second;
-            }
-
-            if (second == null)
-            {
-                return first;
-            }
-
-            return first.Pipe(second);
-        }
-    }
-
     public class ProcessCall
     {
         public string BinPath { get; }
@@ -155,32 +106,5 @@ namespace ROOT.Shared.Utils.OS
             }
             return first.Pipe(second);
         }
-    }
-
-    [Serializable]
-    public class ProcessCallException : Exception
-    {
-        public string CommandLine { get; }
-        public int ExitCode { get; }
-        public string StdOut { get; }
-        public string StdError { get; }
-
-        public ProcessCallException(string commandLine, int exitCode, string stdOut, string stdError)
-            : base($"Command: {commandLine} failed with error code: " + exitCode + Environment.NewLine + stdError)
-        {
-            CommandLine = commandLine;
-            ExitCode = exitCode;
-            StdOut = stdOut;
-            StdError = stdError;
-        }
-    }
-
-    public class ProcessCallResult
-    {
-        public bool Success => ExitCode == 0;
-        public int ExitCode { get; set; }
-        public string StdOut { get; set; }
-        public string StdError { get; set; }
-        public string CommandLine { get; set; }
     }
 }

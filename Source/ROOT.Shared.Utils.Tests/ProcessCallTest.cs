@@ -82,7 +82,7 @@ namespace ROOT.Shared.Utils.Tests
         [TestMethod]
         public void RemoteProcessCall()
         {
-            var remote = new RemoteProcessCall("bbs", "zfsdev.root.dom", true);
+            var remote = new SSHProcessCall("bbs", "zfsdev.root.dom", true);
 
             var full = remote | new ProcessCall("/usr/sbin/zfs", "get all");
 
@@ -92,7 +92,7 @@ namespace ROOT.Shared.Utils.Tests
         [TestMethod]
         public void RemoteProcessCallAsProcessCall()
         {
-            ProcessCall remote = new RemoteProcessCall("bbs", "zfsdev.root.dom", true);
+            ProcessCall remote = new SSHProcessCall("bbs", "zfsdev.root.dom", true);
 
             var full = remote | new ProcessCall("/usr/sbin/zfs", "get all");
 

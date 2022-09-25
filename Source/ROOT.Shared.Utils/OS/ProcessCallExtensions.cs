@@ -18,7 +18,7 @@ namespace ROOT.Shared.Utils.OS
 
         public static ProcessCall Pipe(this ProcessCall processCall, ProcessCall other)
         {
-            if (processCall is RemoteProcessCall remote)
+            if (processCall is SSHProcessCall remote)
             {
                 return Pipe(remote, other);
             }
@@ -32,7 +32,7 @@ namespace ROOT.Shared.Utils.OS
             return new ProcessCall(processCall.BinPath, args);
         }
 
-        public static ProcessCall Pipe(this RemoteProcessCall processCall, ProcessCall other)
+        public static ProcessCall Pipe(this SSHProcessCall processCall, ProcessCall other)
         {
             if (processCall.Started || other.Started)
             {

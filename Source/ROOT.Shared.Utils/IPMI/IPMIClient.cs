@@ -30,12 +30,12 @@ namespace ROOT.Shared.Utils.IPMI
             }
         }
 
-        public IEnumerable<IPMISensorRecord> LoadSensorReadings(RemoteProcessCall remoteCall = null)
+        public IEnumerable<IPMISensorRecord> LoadSensorReadings(SSHProcessCall sshCall = null)
         {
             var pc = GetIPMISensorRecordsProcessCall();
-            if (remoteCall != null)
+            if (sshCall != null)
             {
-                pc = remoteCall | pc;
+                pc = sshCall | pc;
             }
 
             pc.Timeout = TimeSpan.FromSeconds(_timeOutSeconds);
@@ -50,12 +50,12 @@ namespace ROOT.Shared.Utils.IPMI
             return _parser.ParseSensorReadings(data);
         }
 
-        public IEnumerable<Sensor> LoadSensors(RemoteProcessCall remoteCall = null)
+        public IEnumerable<Sensor> LoadSensors(SSHProcessCall sshCall = null)
         {
             var pc = GetIPMISensorListProcessCall();
-            if (remoteCall != null)
+            if (sshCall != null)
             {
-                pc = remoteCall | pc;
+                pc = sshCall | pc;
             }
 
             var resp = pc.LoadResponse();
