@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ROOT.Shared.Utils.Date;
+using ROOT.Shared.Utils.Serialization;
 
 namespace ROOT.Shared.Utils.Tests
 {

@@ -25,16 +25,6 @@
         <TargetFramework>net6.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>Shared utilities with general usage classes.</Description>
-        
-        <PackageId>ROOT.Shared.Utils.Core</PackageId>
-        
-        <AssemblyName>ROOT.Shared.Utils.Core</AssemblyName>
-        
-        <RootNamespace>ROOT.Shared.Utils</RootNamespace>
+        <PackageId>ROOT.Shared.Utils.Serialization</PackageId>
     </PropertyGroup>
-
-    <!--<ItemGroup>
-      <Folder Remove="Archiving\Tar\" />
-    </ItemGroup>-->
-
 </Project>

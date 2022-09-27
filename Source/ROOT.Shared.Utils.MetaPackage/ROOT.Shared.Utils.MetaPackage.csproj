@@ -25,16 +25,14 @@
         <TargetFramework>net6.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>Shared utilities with general usage classes.</Description>
-        
-        <PackageId>ROOT.Shared.Utils.Core</PackageId>
-        
-        <AssemblyName>ROOT.Shared.Utils.Core</AssemblyName>
-        
-        <RootNamespace>ROOT.Shared.Utils</RootNamespace>
+        <PackageId>ROOT.Shared.Utils</PackageId>
     </PropertyGroup>
 
-    <!--<ItemGroup>
-      <Folder Remove="Archiving\Tar\" />
-    </ItemGroup>-->
+    <ItemGroup>
+      <ProjectReference Include="..\ROOT.Shared.Utils.IPMI\ROOT.Shared.Utils.IPMI.csproj" />
+      <ProjectReference Include="..\ROOT.Shared.Utils.OS\ROOT.Shared.Utils.OS.csproj" />
+      <ProjectReference Include="..\ROOT.Shared.Utils.Serialization\ROOT.Shared.Utils.Serialization.csproj" />
+      <ProjectReference Include="..\ROOT.Shared.Utils\ROOT.Shared.Utils.csproj" />
+    </ItemGroup>
 
 </Project>

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ROOT.Shared.Utils\ROOT.Shared.Utils.csproj" />
+    <ProjectReference Include="..\ROOT.Shared.Utils.MetaPackage\ROOT.Shared.Utils.MetaPackage.csproj" />
   </ItemGroup>
 
 </Project>

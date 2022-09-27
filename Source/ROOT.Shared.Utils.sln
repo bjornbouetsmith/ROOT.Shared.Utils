@@ -1,11 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28922.388
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ROOT.Shared.Utils", "ROOT.Shared.Utils\ROOT.Shared.Utils.csproj", "{5974245A-2405-47A4-B81E-20FD04098033}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ROOT.Shared.Utils.Tests", "ROOT.Shared.Utils.Tests\ROOT.Shared.Utils.Tests.csproj", "{280F6D35-6B83-40B5-95B6-65D5AEE475CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ROOT.Shared.Utils.Tests", "ROOT.Shared.Utils.Tests\ROOT.Shared.Utils.Tests.csproj", "{280F6D35-6B83-40B5-95B6-65D5AEE475CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ROOT.Shared.Utils.OS", "ROOT.Shared.Utils.OS\ROOT.Shared.Utils.OS.csproj", "{459BC4B8-E5D6-482D-9CFC-4BD21869ECEB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ROOT.Shared.Utils.Serialization", "ROOT.Shared.Utils.Serialization\ROOT.Shared.Utils.Serialization.csproj", "{C9A82AFB-D488-4FF4-897E-A7D706A48278}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ROOT.Shared.Utils.MetaPackage", "ROOT.Shared.Utils.MetaPackage\ROOT.Shared.Utils.MetaPackage.csproj", "{4F16845B-3D4B-4CE8-9FAE-560DCB425F15}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ROOT.Shared.Utils.IPMI", "ROOT.Shared.Utils.IPMI\ROOT.Shared.Utils.IPMI.csproj", "{BD0E750F-CA1A-4815-8D2D-B471E7BF0233}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +29,22 @@ Global
 		{280F6D35-6B83-40B5-95B6-65D5AEE475CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{280F6D35-6B83-40B5-95B6-65D5AEE475CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{280F6D35-6B83-40B5-95B6-65D5AEE475CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{459BC4B8-E5D6-482D-9CFC-4BD21869ECEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{459BC4B8-E5D6-482D-9CFC-4BD21869ECEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{459BC4B8-E5D6-482D-9CFC-4BD21869ECEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{459BC4B8-E5D6-482D-9CFC-4BD21869ECEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9A82AFB-D488-4FF4-897E-A7D706A48278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9A82AFB-D488-4FF4-897E-A7D706A48278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9A82AFB-D488-4FF4-897E-A7D706A48278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9A82AFB-D488-4FF4-897E-A7D706A48278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F16845B-3D4B-4CE8-9FAE-560DCB425F15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F16845B-3D4B-4CE8-9FAE-560DCB425F15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F16845B-3D4B-4CE8-9FAE-560DCB425F15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F16845B-3D4B-4CE8-9FAE-560DCB425F15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD0E750F-CA1A-4815-8D2D-B471E7BF0233}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD0E750F-CA1A-4815-8D2D-B471E7BF0233}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD0E750F-CA1A-4815-8D2D-B471E7BF0233}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD0E750F-CA1A-4815-8D2D-B471E7BF0233}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
