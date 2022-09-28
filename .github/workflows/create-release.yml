@@ -55,4 +55,4 @@ jobs:
         git add .
         git tag "v${{ steps.update_version.outputs.newVersion }}"
         git commit -m "Update version to ${{ steps.update_version.outputs.newVersion }}"
-        git push
+        git push -all
