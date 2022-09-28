@@ -26,7 +26,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Shared utilities with general usage classes.</Description>
     <PackageId>ROOT.Shared.Utils.OS</PackageId>
-    <PackageLicenseExpression>ms-pl</PackageLicenseExpression>
+    <PackageLicenseExpression>MS-PL</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>
