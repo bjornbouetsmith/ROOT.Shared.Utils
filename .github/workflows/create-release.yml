@@ -48,7 +48,7 @@ jobs:
         path: Source/**/*.nupkg
         if-no-files-found: error
     - name: check in version update
-      id: run git commit
+      id: run_git_commit
       run: |
         git config user.name "${{ github.triggering_actor }}"
         #git config user.email "your-email@users.noreply.github.com"
