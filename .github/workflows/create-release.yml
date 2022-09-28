@@ -54,6 +54,6 @@ jobs:
         git config user.name "${{ github.triggering_actor }}"
         #git config user.email "your-email@users.noreply.github.com"
         git add .
-        git tag "v{{ steps.update_version.outputs.newVersion }}"
+        git tag "v${{ steps.update_version.outputs.newVersion }}"
         git commit -m "Update version to ${{ steps.update_version.outputs.newVersion }}"
         git push
