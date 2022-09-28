@@ -34,7 +34,7 @@ namespace ROOT.Shared.Utils.Tests
             DateTime dt = new DateTime(2019, 12, 11, 14, 08, 09, 10, DateTimeKind.Local);
             var offset = TimeZoneInfo.Local.GetUtcOffset(dt);
             Console.WriteLine(dt.ToIso8601DateTimeString());
-            Assert.AreEqual($"2019-12-11T14:08:09.010{ (offset > TimeSpan.Zero ? "+":"-")+ offset.ToString(@"hh\:mm")}", dt.ToIso8601DateTimeString());
+            Assert.AreEqual($"2019-12-11T14:08:09.010{ (offset >= TimeSpan.Zero ? "+":"-")+ offset.ToString(@"hh\:mm")}", dt.ToIso8601DateTimeString());
         }
 
         [TestMethod]
