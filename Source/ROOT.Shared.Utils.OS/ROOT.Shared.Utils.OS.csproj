@@ -20,6 +20,7 @@
     <Description>Shared utilities with general usage classes.</Description>
     <PackageId>ROOT.Shared.Utils.OS</PackageId>
     <PackageLicenseExpression>MS-PL</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/bjornbouetsmith/ROOT.Shared.Utils</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
