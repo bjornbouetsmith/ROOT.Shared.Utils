@@ -32,6 +32,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore Source/ROOT.Shared.Utils.sln
     - name: Update version
+      id: update_version
       uses: vers-one/dotnet-project-version-updater@v1.0
       with:
         file: Source/ROOT.Shared.Utils.OS/ROOT.Shared.Utils.OS.csproj
@@ -53,6 +54,6 @@ jobs:
         git config user.name "${{ github.triggering_actor }}"
         #git config user.email "your-email@users.noreply.github.com"
         git add .
-        git tag "v{{ steps.update.outputs.newVersion }}"
-        git commit -m "Update version to ${{ steps.update.outputs.newVersion }}"
+        git tag "v{{ steps.update_version.outputs.newVersion }}"
+        git commit -m "Update version to ${{ steps.update_version.outputs.newVersion }}"
         git push
