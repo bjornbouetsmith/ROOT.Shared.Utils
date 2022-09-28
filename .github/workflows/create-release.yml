@@ -12,12 +12,10 @@ on:
   workflow_dispatch:
     # Inputs the workflow accepts.
     inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        default: 'World'
-        # Input has to be provided for the workflow to run
+      publish_nuget:
+        type: boolean  
+        description: 'Publish nuget package'
+        default: true
         required: true
 
 jobs:
@@ -43,6 +41,7 @@ jobs:
     - name: Test
       run: dotnet test Source/**/*.Tests.csproj --no-build --verbosity normal
     - name: Upload nuget package
+      if: ${{ inputs.publish_nuget }}
       uses: actions/upload-artifact@v3.1.0
       with:
         name: nuget
