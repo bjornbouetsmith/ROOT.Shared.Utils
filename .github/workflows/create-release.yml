@@ -1,0 +1,59 @@
+# Create release workflow.
+# gets sources
+# Bump build version
+# builds, tests and publish nuget package to artifacts
+# commmit updated version to the repository
+
+name: Create Release
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  workflow_dispatch:
+    # Inputs the workflow accepts.
+    inputs:
+      name:
+        # Friendly description to be shown in the UI instead of 'name'
+        description: 'Person to greet'
+        # Default value if no value is explicitly provided
+        default: 'World'
+        # Input has to be provided for the workflow to run
+        required: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore Source/ROOT.Shared.Utils.sln
+    - name: Update version
+      uses: vers-one/dotnet-project-version-updater@v1.0
+      with:
+        file: Source/ROOT.Shared.Utils.OS/ROOT.Shared.Utils.OS.csproj
+        version: bump-build
+    - name: Build
+      run: dotnet build Source/ROOT.Shared.Utils.sln --no-restore
+    - name: Test
+      run: dotnet test Source/**/*.Tests.csproj --no-build --verbosity normal
+    - name: Upload nuget package
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: nuget
+        path: Source/**/*.nupkg
+        if-no-files-found: error
+    - name: check in version update
+      id: run git commit
+      run: |
+        git config user.name "${{ github.triggering_actor }}"
+        #git config user.email "your-email@users.noreply.github.com"
+        git add .
+        git tag "v{{ steps.update.outputs.newVersion }}"
+        git commit -m "Update version to ${{ steps.update.outputs.newVersion }}"
+        git push
