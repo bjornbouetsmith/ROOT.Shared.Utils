@@ -17,9 +17,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>1.0.0.0</PackageVersion>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <PackageVersion>1.1.0</PackageVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
     <PackageReleaseNotes>$(RNotes.Replace("####","%0D%0D"))</PackageReleaseNotes>
     <LangVersion>latest</LangVersion>
     <TargetFramework>net6.0</TargetFramework>
