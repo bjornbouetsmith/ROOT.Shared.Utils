@@ -38,9 +38,9 @@ jobs:
         file: Source/ROOT.Shared.Utils.OS/ROOT.Shared.Utils.OS.csproj
         version: bump-build
     - name: Build
-      run: dotnet build Source/ROOT.Shared.Utils.sln --no-restore
+      run: dotnet build Source/ROOT.Shared.Utils.sln --no-restore --configuration Release
     - name: Test
-      run: dotnet test Source/**/*.Tests.csproj --no-build --verbosity normal
+      run: dotnet test Source/**/*.Tests.csproj --no-build --verbosity normal --configuration Release
     - name: Upload nuget package
       if: ${{ inputs.publish_nuget }}
       uses: actions/upload-artifact@v3.1.0
@@ -52,7 +52,6 @@ jobs:
       id: run_git_commit
       run: |
         git config user.name "${{ github.triggering_actor }}"
-        #git config user.email "your-email@users.noreply.github.com"
         git add .
         git tag "v${{ steps.update_version.outputs.newVersion }}"
         git commit -m "Update version to ${{ steps.update_version.outputs.newVersion }}"
