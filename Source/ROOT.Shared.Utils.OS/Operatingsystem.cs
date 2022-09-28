@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace ROOT.Shared.Utils.OS
 {
     public static class OperatingSystem
     {
-        public static bool Windows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        public static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        public static bool MacOS => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+        public static bool IsMacOS => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-        public static bool Linux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         public static string Description => RuntimeInformation.OSDescription;
 
@@ -41,6 +38,11 @@ namespace ROOT.Shared.Utils.OS
             if (toLower.Contains("centos"))
             {
                 return LinuxType.CentOS;
+            }
+
+            if (toLower.Contains("rocky"))
+            {
+                return LinuxType.Rocky;
             }
 
             if (toLower.Contains("oracle"))

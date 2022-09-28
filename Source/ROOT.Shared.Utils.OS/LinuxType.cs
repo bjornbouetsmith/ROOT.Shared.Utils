@@ -14,5 +14,6 @@
         Oracle,
         SLES,
         Ubuntu,
+        Rocky,
     }
 }
