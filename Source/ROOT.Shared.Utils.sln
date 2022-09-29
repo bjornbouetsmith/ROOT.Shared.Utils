@@ -18,6 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{FD7C1E64-71E7-4C5D-8AD9-8923F897CC3E}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\create-release.yml = ..\.github\workflows\create-release.yml
+		Directory.Build.props = Directory.Build.props
 		..\.github\workflows\dotnet-ci-build.yml = ..\.github\workflows\dotnet-ci-build.yml
 		..\README.md = ..\README.md
 	EndProjectSection
