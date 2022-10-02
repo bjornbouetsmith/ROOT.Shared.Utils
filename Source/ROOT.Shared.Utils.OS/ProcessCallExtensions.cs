@@ -10,13 +10,13 @@ namespace ROOT.Shared.Utils.OS
 
         private static readonly string Shell = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? WindowsShell : UnixShell;
 
-        public static ProcessCall ForceShell(this ProcessCall processCall, OSPlatform platform)
+        public static IProcessCall ForceShell(this IProcessCall processCall, OSPlatform platform)
         {
             var shell = platform == OSPlatform.Windows ? WindowsShell : UnixShell;
             return new ProcessCall(processCall.BinPath, processCall.Arguments) { Shell = shell };
         }
 
-        public static ProcessCall Pipe(this ProcessCall processCall, ProcessCall other)
+        public static IProcessCall Pipe(this IProcessCall processCall, IProcessCall other)
         {
             if (processCall is SSHProcessCall remote)
             {
@@ -28,11 +28,26 @@ namespace ROOT.Shared.Utils.OS
                 throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
             }
 
+            return processCall.Pipe(other);
+        }
+
+        public static ProcessCall Pipe(this ProcessCall processCall, ProcessCall other)
+        {
+            if (processCall is SSHProcessCall remote)
+            {
+                return Pipe(remote, (IProcessCall)other);
+            }
+
+            if (processCall.Started || other.Started)
+            {
+                throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
+            }
+
             string args = string.Concat(processCall.Arguments, " | ", other.BinPath, " ", other.Arguments).Trim();
             return new ProcessCall(processCall.BinPath, args);
         }
 
-        public static ProcessCall Pipe(this SSHProcessCall processCall, ProcessCall other)
+        public static ProcessCall Pipe(this SSHProcessCall processCall, IProcessCall other)
         {
             if (processCall.Started || other.Started)
             {
@@ -44,7 +59,7 @@ namespace ROOT.Shared.Utils.OS
             return new ProcessCall(processCall.BinPath, args);
         }
 
-        public static ProcessCall Execute(this ProcessCall processCall)
+        public static IProcessCall Execute(this IProcessCall processCall)
         {
             if (processCall.Started)
             {

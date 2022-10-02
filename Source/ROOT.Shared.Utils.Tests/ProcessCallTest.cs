@@ -34,7 +34,7 @@ namespace ROOT.Shared.Utils.Tests
             }
             var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");
 
-            call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
+            call |= new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD");
 
 
             Assert.AreEqual("C:\\Windows\\System32\\diskperf.exe /? | C:\\Windows\\System32\\findstr.exe YD", call.FullCommandLine);
@@ -69,7 +69,7 @@ namespace ROOT.Shared.Utils.Tests
             }
             var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe", "/?");
 
-            call = call.Pipe(new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD"));
+            call |= new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD");
 
 
             var response = call.LoadResponse();
@@ -139,6 +139,18 @@ namespace ROOT.Shared.Utils.Tests
 
             Console.WriteLine(pc.FullCommandLine);
             Assert.AreEqual("/sbin/zfs list", pc.FullCommandLine);
+        }
+
+        [TestMethod]
+        public void MockProcessCallTest()
+        {
+            var mock = new MockProcessCall();
+            mock.StdOutput = "Hello world";
+            IProcessCall pc = mock;
+
+            pc |= new ProcessCall("/sbin/zfs", "list");
+            var result = pc.LoadResponse();
+            Assert.AreEqual(mock.StdOutput,result.StdOut);
         }
     }
 }

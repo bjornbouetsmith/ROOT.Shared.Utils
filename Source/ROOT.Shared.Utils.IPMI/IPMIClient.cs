@@ -16,7 +16,7 @@ namespace ROOT.Shared.Utils.IPMI
         private readonly bool _usePasswordFromEnv;
         private readonly int _timeOutSeconds;
         private readonly IPMIParser _parser = new IPMIParser();
-        public IPMIClient(string hostName, string userNam, string password, string ipmiInterface = "lanplus", bool usePasswordFromEnv = false, int timeOutSeconds=10)
+        public IPMIClient(string hostName, string userNam, string password, string ipmiInterface = "lanplus", bool usePasswordFromEnv = false, int timeOutSeconds = 10)
         {
             _hostName = hostName;
             _userNam = userNam;
@@ -32,11 +32,7 @@ namespace ROOT.Shared.Utils.IPMI
 
         public IEnumerable<IPMISensorRecord> LoadSensorReadings(SSHProcessCall sshCall = null)
         {
-            var pc = GetIPMISensorRecordsProcessCall();
-            if (sshCall != null)
-            {
-                pc = sshCall | pc;
-            }
+            var pc = sshCall.Pipe(GetIPMISensorRecordsProcessCall());
 
             pc.Timeout = TimeSpan.FromSeconds(_timeOutSeconds);
             var resp = pc.LoadResponse();
@@ -52,12 +48,8 @@ namespace ROOT.Shared.Utils.IPMI
 
         public IEnumerable<Sensor> LoadSensors(SSHProcessCall sshCall = null)
         {
-            var pc = GetIPMISensorListProcessCall();
-            if (sshCall != null)
-            {
-                pc = sshCall | pc;
-            }
-
+            var pc = sshCall.Pipe(GetIPMISensorListProcessCall());
+            
             var resp = pc.LoadResponse();
             if (!resp.Success)
             {
@@ -69,7 +61,7 @@ namespace ROOT.Shared.Utils.IPMI
             return _parser.ParseSensorIds(data);
         }
 
-        private ProcessCall GetIPMISensorListProcessCall()
+        private IProcessCall GetIPMISensorListProcessCall()
         {
             var args = $"-I {_ipmiInterface} -H {_hostName} -U {_userNam}";
             if (_usePasswordFromEnv)
@@ -85,7 +77,7 @@ namespace ROOT.Shared.Utils.IPMI
 
             return pc;
         }
-        private ProcessCall GetIPMISensorRecordsProcessCall()
+        private IProcessCall GetIPMISensorRecordsProcessCall()
         {
             var args = $"-I {_ipmiInterface} -H {_hostName} -U {_userNam}";
             if (_usePasswordFromEnv)

@@ -18,7 +18,7 @@
             RequiresSudo = requiresSudo;
         }
 
-        public static ProcessCall operator |(SSHProcessCall first, ProcessCall second)
+        public static IProcessCall operator |(SSHProcessCall first, ProcessCall second)
         {
             if (first == null)
             {

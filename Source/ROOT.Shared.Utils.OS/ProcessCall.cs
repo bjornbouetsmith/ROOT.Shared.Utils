@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace ROOT.Shared.Utils.OS
 {
-    public class ProcessCall
+    public class ProcessCall : IProcessCall
     {
         public string BinPath { get; }
         public string Arguments { get; }
@@ -78,6 +78,10 @@ namespace ROOT.Shared.Utils.OS
         }
 
         public bool Started { get; private set; }
+        public IProcessCall Pipe(IProcessCall other)
+        {
+            return this | other;
+        }
 
         private static void CopyStreamToProcessInput(Stream inputStream, Process process)
         {
@@ -104,7 +108,37 @@ namespace ROOT.Shared.Utils.OS
             {
                 return first;
             }
+            return ProcessCallExtensions.Pipe((ProcessCall)first, (ProcessCall)second);
+        }
+
+        public static IProcessCall operator |(IProcessCall first, ProcessCall second)
+        {
+            if (first == null)
+            {
+                return second;
+            }
+
+            if (second == null)
+            {
+                return first;
+            }
             return first.Pipe(second);
+        }
+
+
+        public static IProcessCall operator |(ProcessCall first, IProcessCall second)
+        {
+            if (first == null)
+            {
+                return second;
+            }
+
+            if (second == null)
+            {
+                return first;
+            }
+
+            return ProcessCallExtensions.Pipe(first, second);
         }
     }
 }
