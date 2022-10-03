@@ -78,7 +78,7 @@ namespace ROOT.Shared.Utils.OS
             {
                 var pc = new ProcessCall(which, "systemctl");
 
-                var response = pc.LoadResponse();
+                var response = pc.LoadResponse(false);
                 if (response.Success && response.StdOut.Trim()
                        .ToLowerInvariant().Contains("systemctl"))
                 {
@@ -86,7 +86,7 @@ namespace ROOT.Shared.Utils.OS
                 }
                 pc = new ProcessCall(which, "service");
 
-                response = pc.LoadResponse();
+                response = pc.LoadResponse(false);
                 if (response.Success && response.StdOut.Trim()
                         .ToLowerInvariant().Contains("service"))
                 {

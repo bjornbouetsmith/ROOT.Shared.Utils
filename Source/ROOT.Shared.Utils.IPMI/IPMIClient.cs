@@ -35,12 +35,8 @@ namespace ROOT.Shared.Utils.IPMI
             var pc = sshCall.Pipe(GetIPMISensorRecordsProcessCall());
 
             pc.Timeout = TimeSpan.FromSeconds(_timeOutSeconds);
-            var resp = pc.LoadResponse();
-            if (!resp.Success)
-            {
-                throw resp.ToException();
-            }
-
+            var resp = pc.LoadResponse(true);
+            
             var data = resp.StdOut;
 
             return _parser.ParseSensorReadings(data);
@@ -50,12 +46,8 @@ namespace ROOT.Shared.Utils.IPMI
         {
             var pc = sshCall.Pipe(GetIPMISensorListProcessCall());
             
-            var resp = pc.LoadResponse();
-            if (!resp.Success)
-            {
-                throw resp.ToException();
-            }
-
+            var resp = pc.LoadResponse(true);
+            
             var data = resp.StdOut;
 
             return _parser.ParseSensorIds(data);

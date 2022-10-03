@@ -18,7 +18,7 @@ namespace ROOT.Shared.Utils.Tests
             var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe");
             Console.WriteLine(call.Execute().FullCommandLine);
 
-            var result = call.LoadResponse("/?");
+            var result = call.LoadResponse(false, "/?");
 
             Assert.IsTrue(result.Success);
             Console.WriteLine(result.StdOut);
@@ -41,7 +41,7 @@ namespace ROOT.Shared.Utils.Tests
 
             Console.WriteLine(call.FullCommandLine);
             Console.WriteLine(call.Execute().FullCommandLine);
-            var result = call.LoadResponse();
+            var result = call.LoadResponse(false);
 
             Assert.IsTrue(result.Success);
             Console.WriteLine(result.StdOut);
@@ -72,7 +72,7 @@ namespace ROOT.Shared.Utils.Tests
             call |= new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD");
 
 
-            var response = call.LoadResponse();
+            var response = call.LoadResponse(false);
             Assert.IsTrue(response.Success);
             Console.WriteLine(response.StdOut);
             Assert.AreEqual("-YD Enables the disk performance counters for physical drives.", response.StdOut.Trim());
@@ -149,7 +149,7 @@ namespace ROOT.Shared.Utils.Tests
             IProcessCall pc = mock;
 
             pc |= new ProcessCall("/sbin/zfs", "list");
-            var result = pc.LoadResponse();
+            var result = pc.LoadResponse(false);
             Assert.AreEqual(mock.StdOutput,result.StdOut);
         }
     }

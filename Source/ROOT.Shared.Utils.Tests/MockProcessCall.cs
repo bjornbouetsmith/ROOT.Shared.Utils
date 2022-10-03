@@ -6,30 +6,29 @@ namespace ROOT.Shared.Utils.Tests
 {
     internal class MockProcessCall : IProcessCall
     {
-        public ProcessCallResult LoadResponse(params string[] arguments)
+        public ProcessCallResult LoadResponse(bool throwOnFailure, params string[] arguments)
         {
-            return new ProcessCallResult
-            {
-                CommandLine = FullCommandLine,
-                ExitCode = Success ? 0 : 1,
-                StdError = StdError,
-                StdOut = StdOutput
-            };
+            return LoadResponse(throwOnFailure, null, arguments);
         }
 
         public string StdOutput { get; set; }
 
         public string StdError { get; set; }
 
-        public ProcessCallResult LoadResponse(Stream inputStream, params string[] arguments)
+        public ProcessCallResult LoadResponse(bool throwOnFailure, Stream inputStream, params string[] arguments)
         {
-            return new ProcessCallResult
+            var res = new ProcessCallResult
             {
                 CommandLine = FullCommandLine,
                 ExitCode = Success ? 0 : 1,
                 StdError = StdError,
                 StdOut = StdOutput
             };
+            if (throwOnFailure && !Success)
+            {
+                throw res.ToException();
+            }
+            return res;
         }
 
         public bool Success { get; set; } = true;

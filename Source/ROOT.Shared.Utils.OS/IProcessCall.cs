@@ -11,11 +11,13 @@ namespace ROOT.Shared.Utils.OS
         /// <summary>
         /// Loads the response from the process call, using the passed arguments if any
         /// </summary>
-        ProcessCallResult LoadResponse(params string[] arguments);
+        /// <param name="throwOnFailure">Whether or not throw an exception if statuscode indicates a failure or not</param>
+        /// <param name="arguments">Any arguments to pass to the command</param>
+        ProcessCallResult LoadResponse(bool throwOnFailure, params string[] arguments);
         /// <summary>
         /// Loads the response from the process call, using the passed input stream and arguments if any
         /// </summary>
-        ProcessCallResult LoadResponse(Stream inputStream, params string[] arguments);
+        ProcessCallResult LoadResponse(bool throwOnFailure, Stream inputStream, params string[] arguments);
 
         string BinPath { get; }
         string Arguments { get; }

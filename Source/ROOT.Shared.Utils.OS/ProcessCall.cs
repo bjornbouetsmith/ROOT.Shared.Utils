@@ -29,12 +29,12 @@ namespace ROOT.Shared.Utils.OS
             }
         }
 
-        public ProcessCallResult LoadResponse(params string[] arguments)
+        public ProcessCallResult LoadResponse(bool throwOnFailure, params string[] arguments)
         {
-            return LoadResponse(null, arguments);
+            return LoadResponse(throwOnFailure, null, arguments);
         }
 
-        public ProcessCallResult LoadResponse(Stream inputStream, params string[] arguments)
+        public ProcessCallResult LoadResponse(bool throwOnFailure, Stream inputStream, params string[] arguments)
         {
             var exec = this.Execute();
             Started = true;
@@ -65,16 +65,13 @@ namespace ROOT.Shared.Utils.OS
 
             var stdOut = reader.Output?.ReadToEnd();
             var stdError = reader.Error?.ReadToEnd();
-
-            return new ProcessCallResult { ExitCode = exitCode, StdOut = stdOut, StdError = stdError, CommandLine = string.Join(" ", exec.BinPath, args) };
-        }
-
-        private void Write(List<string> content, string what)
-        {
-            lock (content)
+            var result = new ProcessCallResult { ExitCode = exitCode, StdOut = stdOut, StdError = stdError, CommandLine = string.Join(" ", exec.BinPath, args) };
+            if (throwOnFailure && exitCode != 0)
             {
-                content.Add(what);
+                throw result.ToException();
             }
+            
+            return result;
         }
 
         public bool Started { get; private set; }
