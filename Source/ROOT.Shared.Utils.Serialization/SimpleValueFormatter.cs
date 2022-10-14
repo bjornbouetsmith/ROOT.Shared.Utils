@@ -105,5 +105,10 @@ namespace ROOT.Shared.Utils.Serialization
         {
             WriteNumber(value, target);
         }
+
+        public void Write(TimeSpan value, StringBuilder target)
+        {
+            WriteNumber(value.Ticks, target);
+        }
     }
 }

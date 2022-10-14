@@ -155,6 +155,14 @@ namespace ROOT.Shared.Utils.Tests
 
             Console.WriteLine(withDic.Dump(new JsonFormatter()));
         }
+
+        [TestMethod]
+        public void TimeSpanTest()
+        {
+            var withTimeSpan = new WithTimeSpan { ReadLatency = TimeSpan.FromMilliseconds(0.01), WriteLatency = TimeSpan.FromMilliseconds(0.1) };
+            Console.WriteLine(withTimeSpan.Dump());
+            Console.WriteLine(withTimeSpan.Dump(new JsonFormatter()));
+        }
     }
 
 
@@ -231,6 +239,12 @@ namespace ROOT.Shared.Utils.Tests
     {
         public string[] Values { get; set; }
         public IEnumerable<int> IntValues { get; set; }
+    }
+
+    public class WithTimeSpan
+    {
+        public TimeSpan ReadLatency { get; set; }
+        public TimeSpan WriteLatency { get; set; }
     }
 
 

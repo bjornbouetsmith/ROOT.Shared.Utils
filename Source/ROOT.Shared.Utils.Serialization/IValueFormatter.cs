@@ -17,7 +17,8 @@ namespace ROOT.Shared.Utils.Serialization
         ITypeFormatter<Guid>,
         ITypeFormatter<ushort>,
         ITypeFormatter<uint>,
-        ITypeFormatter<ulong>
+        ITypeFormatter<ulong>,
+        ITypeFormatter<TimeSpan>
     {
     }
 }
