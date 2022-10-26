@@ -26,6 +26,7 @@ namespace ROOT.Shared.Utils.OS
         bool UseShell { get; set; }
         TimeSpan Timeout { get; set; }
         bool Started { get; }
+        bool RequiresSudo { get; set; }
 
         public IProcessCall Pipe(IProcessCall other);
     }

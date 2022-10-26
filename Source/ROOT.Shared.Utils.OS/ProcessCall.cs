@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -14,6 +13,7 @@ namespace ROOT.Shared.Utils.OS
         public string Shell { get; set; }
         public bool UseShell { get; set; } = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(5);
+        public bool RequiresSudo { get; set; }
 
         public ProcessCall(string binPath, string arguments = "")
         {
@@ -39,6 +39,7 @@ namespace ROOT.Shared.Utils.OS
             var exec = this.Execute();
             Started = true;
             string args = exec.Arguments;
+
             if (arguments != null && arguments.Length > 0)
             {
                 args += " " + string.Join(" ", arguments);

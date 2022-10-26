@@ -152,5 +152,16 @@ namespace ROOT.Shared.Utils.Tests
             var result = pc.LoadResponse(false);
             Assert.AreEqual(mock.StdOutput,result.StdOut);
         }
+
+        [TestMethod]
+        public void ProcessCallWithSudo()
+        {
+            
+            var command = new ProcessCall("/sbin/zfs", "list");
+            command.RequiresSudo = true;
+            command.UseShell = false;
+     
+            Assert.AreEqual("/usr/bin/sudo /sbin/zfs list", command.Execute().FullCommandLine);
+        }
     }
 }

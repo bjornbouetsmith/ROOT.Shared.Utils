@@ -39,6 +39,8 @@ namespace ROOT.Shared.Utils.Tests
         public bool UseShell { get; set; }
         public TimeSpan Timeout { get; set; }
         public bool Started { get; set; }
+        public bool RequiresSudo { get; set; }
+
         public IProcessCall Pipe(IProcessCall other)
         {
             return this;

@@ -27,6 +27,10 @@ namespace ROOT.Shared.Utils.OS
             {
                 throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
             }
+            if(processCall is ProcessCall first && other is ProcessCall second)
+            {
+                return Pipe(first, second);
+            }
 
             return processCall.Pipe(other);
         }
@@ -68,11 +72,25 @@ namespace ROOT.Shared.Utils.OS
 
             if (!processCall.UseShell)
             {
+                if (processCall.RequiresSudo)
+                {
+                    var bin = Sudo.BinPath;
+                    return new ProcessCall(bin, processCall.FullCommandLine);
+                }
+
                 return processCall;
             }
             string args = string.Concat(ShellPrefix, " \"", processCall.BinPath, " ", processCall.Arguments, "\"").Trim();
 
             var shell = processCall.Shell ?? Shell;
+
+            if (processCall.RequiresSudo)
+            {
+                args = string.Concat(shell, " ", args);
+                return new ProcessCall(Sudo.BinPath, args);
+
+            }
+
             return new ProcessCall(shell, args);
         }
 

@@ -10,8 +10,6 @@
     /// </summary>
     public class SSHProcessCall : ProcessCall
     {
-        public bool RequiresSudo { get; }
-
         public SSHProcessCall(string username, string hostName, bool requiresSudo = false)
             : base(SSH.BinPath, $"{username}@{hostName}")
         {
