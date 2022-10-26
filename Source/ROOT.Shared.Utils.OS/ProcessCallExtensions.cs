@@ -23,13 +23,24 @@ namespace ROOT.Shared.Utils.OS
                 return Pipe(remote, other);
             }
 
+            if (processCall is ProcessCall first && other is ProcessCall second)
+            {
+                return Pipe(first, second);
+            }
+
+            if (processCall == null)
+            {
+                return other;
+            }
+
+            if (other == null)
+            {
+                return processCall;
+            }
+
             if (processCall.Started || other.Started)
             {
                 throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
-            }
-            if(processCall is ProcessCall first && other is ProcessCall second)
-            {
-                return Pipe(first, second);
             }
 
             return processCall.Pipe(other);
@@ -40,6 +51,16 @@ namespace ROOT.Shared.Utils.OS
             if (processCall is SSHProcessCall remote)
             {
                 return Pipe(remote, (IProcessCall)other);
+            }
+            
+            if (processCall == null)
+            {
+                return other;
+            }
+
+            if (other == null)
+            {
+                return processCall;
             }
 
             if (processCall.Started || other.Started)

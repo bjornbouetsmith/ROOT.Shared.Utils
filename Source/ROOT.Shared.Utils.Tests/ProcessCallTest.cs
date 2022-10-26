@@ -150,17 +150,30 @@ namespace ROOT.Shared.Utils.Tests
 
             pc |= new ProcessCall("/sbin/zfs", "list");
             var result = pc.LoadResponse(false);
-            Assert.AreEqual(mock.StdOutput,result.StdOut);
+            Assert.AreEqual(mock.StdOutput, result.StdOut);
+        }
+
+        [TestMethod]
+        public void ProcessCallExtensionPipeWithNullTest()
+        {
+            IProcessCall pc = null;
+            var result = ProcessCallExtensions.Pipe(pc, new ProcessCall("/sbin/zfs", "list"));
+            Assert.AreEqual("/sbin/zfs list", result.FullCommandLine);
+
+            result = ProcessCallExtensions.Pipe(new ProcessCall("/sbin/zfs", "list"), null);
+            Assert.AreEqual("/sbin/zfs list", result.FullCommandLine);
+            result = ProcessCallExtensions.Pipe(new ProcessCall("/sbin/zfs", "list"), (IProcessCall)null);
+            Assert.AreEqual("/sbin/zfs list", result.FullCommandLine);
         }
 
         [TestMethod]
         public void ProcessCallWithSudo()
         {
-            
+
             var command = new ProcessCall("/sbin/zfs", "list");
             command.RequiresSudo = true;
             command.UseShell = false;
-     
+
             Assert.AreEqual("/usr/bin/sudo /sbin/zfs list", command.Execute().FullCommandLine);
         }
     }
