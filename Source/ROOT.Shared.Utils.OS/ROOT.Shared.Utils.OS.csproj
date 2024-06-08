@@ -7,7 +7,7 @@
     <RNotes>$(ReleaseNotes)</RNotes>
   </PropertyGroup>
   <PropertyGroup>
-    <Version>1.1.11</Version>
+    <Version>1.1.12</Version>
   </PropertyGroup>
 
   <PropertyGroup>
