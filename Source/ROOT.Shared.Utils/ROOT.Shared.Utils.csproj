@@ -8,7 +8,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <Version>1.1.10</Version>
+    <Version>1.1.11</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
