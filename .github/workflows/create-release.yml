@@ -77,19 +77,6 @@ jobs:
       run: dotnet build Source/ROOT.Shared.Utils.sln --no-restore --configuration Release
     - name: Test
       run: dotnet test Source/**/*.Tests.csproj --no-build --verbosity normal --configuration Release
-#    - name: Upload nuget package
-#      if: ${{ inputs.publish_nuget }}
-#      uses: actions/upload-artifact@v3.1.0
-#      with:
-#        name: nuget
-#        path: Source/**/*.nupkg
-#        if-no-files-found: error
-    - name: publish nuget to github repository
-      if: ${{ inputs.publish_nuget }}  
-      run: dotnet nuget push Source/**/*.nupkg  --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
-    - name: publish nuget to nuget.org repository
-      if: ${{ inputs.publish_nuget_org }}
-      run: dotnet nuget push Source/**/*.nupkg  --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: check in version update
       id: run_git_commit
       run: |
@@ -99,3 +86,18 @@ jobs:
         git push -f
         git tag "v${{ steps.update_version.outputs.newVersion }}"
         git push --tags -f
+
+#    - name: Upload nuget package
+#      if: ${{ inputs.publish_nuget }}
+#      uses: actions/upload-artifact@v3.1.0
+#      with:
+#        name: nuget
+#        path: Source/**/*.nupkg
+#        if-no-files-found: error
+    - name: publish nuget to github repository
+      if: ${{ inputs.publish_nuget }}  
+      run: dotnet nuget push Source/**/*.nupkg  --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source "github"
+    - name: publish nuget to nuget.org repository
+      if: ${{ inputs.publish_nuget_org }}
+      run: dotnet nuget push Source/**/*.nupkg  --api-key ${{ secrets.NUGET_API_KEY }} --skip-duplicate --source https://api.nuget.org/v3/index.json
+
