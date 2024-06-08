@@ -17,6 +17,11 @@ on:
         description: 'Publish nuget package'
         default: true
         required: true
+      publish_nuget_org:
+        type: boolean  
+        description: 'Publish nuget package to nuget.org'
+        default: false
+        required: true
 
 jobs:
   build:
@@ -82,6 +87,9 @@ jobs:
     - name: publish nuget to github repository
       if: ${{ inputs.publish_nuget }}  
       run: dotnet nuget push Source/**/*.nupkg  --api-key ${{ secrets.GITHUB_TOKEN }} --source "github"
+    - name: publish nuget to nuget.org repository
+      if: ${{ inputs.publish_nuget_org }}
+      run: dotnet nuget push Source/**/*.nupkg  --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: check in version update
       id: run_git_commit
       run: |
