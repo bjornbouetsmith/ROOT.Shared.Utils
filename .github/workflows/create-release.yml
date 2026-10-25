@@ -30,6 +30,7 @@ jobs:
     permissions:
       contents: read
       packages: write # Grants the GITHUB_TOKEN permission to publish packages
+      id-token: write
     steps:
     - uses: actions/checkout@v6
       with:
@@ -54,9 +55,14 @@ jobs:
     - name: publish nuget to github repository
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      if: ${{ inputs.publish_nuget }}  
+      if: false
       run: dotnet nuget push Source/**/*.nupkg  --api-key $GITHUB_TOKEN --skip-duplicate --source "github"
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: bjornbouetsmith
     - name: publish nuget to nuget.org repository
       if: ${{ inputs.publish_nuget_org }}
-      run: dotnet nuget push Source/**/*.nupkg   --skip-duplicate --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push Source/**/*.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}}  --skip-duplicate --source https://api.nuget.org/v3/index.json
 
