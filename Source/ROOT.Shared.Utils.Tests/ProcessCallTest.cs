@@ -131,11 +131,33 @@ namespace ROOT.Shared.Utils.Tests
         }
 
         [TestMethod]
+        public void PipeLeftLocalMachineProcessCallTest()
+        {
+            ProcessCall pc = new LocalMachineProcessCall();
+
+            pc |= new ProcessCall("/sbin/zfs", "list");
+
+            Console.WriteLine(pc.FullCommandLine);
+            Assert.AreEqual("/sbin/zfs list", pc.FullCommandLine);
+        }
+
+        [TestMethod]
         public void PipeRightNullsTest()
         {
             ProcessCall pc = new ProcessCall("/sbin/zfs", "list");
 
             pc |= null;
+
+            Console.WriteLine(pc.FullCommandLine);
+            Assert.AreEqual("/sbin/zfs list", pc.FullCommandLine);
+        }
+
+        [TestMethod]
+        public void PipeRighLocalMachineProcessCallTest()
+        {
+            IProcessCall pc = new ProcessCall("/sbin/zfs", "list");
+
+            pc |= new LocalMachineProcessCall();
 
             Console.WriteLine(pc.FullCommandLine);
             Assert.AreEqual("/sbin/zfs list", pc.FullCommandLine);

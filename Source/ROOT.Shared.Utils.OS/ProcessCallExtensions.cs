@@ -28,12 +28,12 @@ namespace ROOT.Shared.Utils.OS
                 return Pipe(first, second);
             }
 
-            if (processCall == null)
+            if (processCall is null or LocalMachineProcessCall)
             {
                 return other;
             }
 
-            if (other == null)
+            if (other is null or LocalMachineProcessCall)
             {
                 return processCall;
             }
@@ -53,12 +53,12 @@ namespace ROOT.Shared.Utils.OS
                 return Pipe(remote, (IProcessCall)other);
             }
             
-            if (processCall == null)
+            if (processCall is null or LocalMachineProcessCall)
             {
                 return other;
             }
 
-            if (other == null)
+            if (other is null or LocalMachineProcessCall)
             {
                 return processCall;
             }
