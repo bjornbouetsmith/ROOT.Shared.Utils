@@ -55,7 +55,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       if: ${{ inputs.publish_nuget }}  
-      run: dotnet nuget push Source/**/*.nupkg  --api-key secrets.GITHUB_TOKEN --skip-duplicate --source "github"
+      run: dotnet nuget push Source/**/*.nupkg  --api-key $GITHUB_TOKEN --skip-duplicate --source "github"
     - name: publish nuget to nuget.org repository
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
