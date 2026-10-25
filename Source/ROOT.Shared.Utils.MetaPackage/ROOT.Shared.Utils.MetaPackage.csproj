@@ -6,9 +6,6 @@
   <PropertyGroup Condition="'$(ReleaseNotes)' != ''">
     <RNotes>$(ReleaseNotes)</RNotes>
   </PropertyGroup>
-  <PropertyGroup>
-    <Version>1.1.12</Version>
-  </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
