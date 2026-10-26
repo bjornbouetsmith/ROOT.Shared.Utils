@@ -15,12 +15,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 using System;
 
-namespace ROOT.Shared.Utils.Archiving.Tar
+namespace ROOT.Shared.Utils.Archiving.Tar;
+
+public class TarException : Exception
 {
-    public class TarException : Exception
+    public TarException(string message) : base(message)
     {
-        public TarException(string message) : base(message)
-        {
-        }
     }
 }
