@@ -22,9 +22,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         dotnet nuget add source --username ${{ github.triggering_actor }} --password $GITHUB_TOKEN --store-password-in-clear-text --name github "https://nuget.pkg.github.com/bjornbouetsmith/index.json"
-        dotnet restore Source/ROOT.Shared.Utils.sln
+        dotnet restore Source/ROOT.Shared.Utils.slnx
     - name: Build
-      run: dotnet build Source/ROOT.Shared.Utils.sln --no-restore
+      run: dotnet build Source/ROOT.Shared.Utils.slnx --no-restore
     - name: Test
       run: dotnet test Source/**/*.Tests.csproj --no-build --verbosity normal
     - name: Set status

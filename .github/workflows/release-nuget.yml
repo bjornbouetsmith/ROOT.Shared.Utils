@@ -1,10 +1,6 @@
-# Create release workflow.
-# gets sources
-# Bump build version
-# builds, tests and publish nuget package to artifacts
-# commmit updated version to the repository
+# Takes current version and builds/test and then release nuget to the selected places
 
-name: Create Release
+name: Release nuget
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
@@ -47,9 +43,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         dotnet nuget add source --username ${{ github.triggering_actor }} --password $GITHUB_TOKEN --store-password-in-clear-text --name github "https://nuget.pkg.github.com/bjornbouetsmith/index.json"
-        dotnet restore Source/ROOT.Shared.Utils.sln
+        dotnet restore Source/ROOT.Shared.Utils.slnx
     - name: Build
-      run: dotnet build Source/ROOT.Shared.Utils.sln --no-restore --configuration Release
+      run: dotnet build Source/ROOT.Shared.Utils.slnx --no-restore --configuration Release
     - name: Test
       run: dotnet test Source/**/*.Tests.csproj --no-build --verbosity normal --configuration Release
     - name: publish nuget to github repository

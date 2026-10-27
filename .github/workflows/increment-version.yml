@@ -96,13 +96,13 @@ jobs:
         git diff -- "$PROPS_FILE"
 
     - name: Restore dependencies
-      run: dotnet restore Source/ROOT.Shared.Utils.sln
+      run: dotnet restore Source/ROOT.Shared.Utils.slnx
 
     - name: Build
-      run: dotnet build Source/ROOT.Shared.Utils.sln --no-restore --configuration Release
+      run: dotnet build Source/ROOT.Shared.Utils.slnx --no-restore --configuration Release
 
     - name: Test
-      run: dotnet test Source/ROOT.Shared.Utils.sln --no-build --configuration Release --verbosity normal
+      run: dotnet test Source/ROOT.Shared.Utils.slnx --no-build --configuration Release --verbosity normal
 
     - name: Commit and push release branch
       env:

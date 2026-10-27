@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Github/">
+    <File Path="../.github/workflows/dotnet-ci-build.yml" />
+    <File Path="../.github/workflows/increment-version.yml" />
+    <File Path="../.github/workflows/release-nuget.yml" />
+    <File Path="../README.md" />
+  </Folder>
+  <Folder Name="/Scripts/">
+    <File Path="../Scripts/bump-version.sh" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="ROOT.Shared.Utils.IPMI/ROOT.Shared.Utils.IPMI.csproj" />
+  <Project Path="ROOT.Shared.Utils.MetaPackage/ROOT.Shared.Utils.MetaPackage.csproj" />
+  <Project Path="ROOT.Shared.Utils.OS/ROOT.Shared.Utils.OS.csproj" />
+  <Project Path="ROOT.Shared.Utils.Serialization/ROOT.Shared.Utils.Serialization.csproj" />
+  <Project Path="ROOT.Shared.Utils.Tests/ROOT.Shared.Utils.Tests.csproj" />
+  <Project Path="ROOT.Shared.Utils/ROOT.Shared.Utils.csproj" />
+</Solution>

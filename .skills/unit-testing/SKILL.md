@@ -135,10 +135,10 @@ From the repository root:
 
 ```bash
 # Build the solution
-dotnet build Source/ROOT.Shared.Utils.sln
+dotnet build Source/ROOT.Shared.Utils.slnx
 
 # Run the full test suite
-dotnet test Source/ROOT.Shared.Utils.sln
+dotnet test Source/ROOT.Shared.Utils.slnx
 
 # Run a focused test class while iterating
 dotnet test Source/ROOT.Shared.Utils.Tests/ROOT.Shared.Utils.Tests.csproj \
