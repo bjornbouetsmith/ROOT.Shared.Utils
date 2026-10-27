@@ -18,57 +18,56 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace ROOT.Shared.Utils.Archiving.Tar
+namespace ROOT.Shared.Utils.Archiving.Tar;
+
+public class TarWriter : LegacyTarWriter
 {
-    public class TarWriter : LegacyTarWriter
+    public TarWriter(string fileName, string relativeToPath = null) : base(File.Create(fileName, 8192, FileOptions.Asynchronous), true, relativeToPath)
     {
-        public TarWriter(string fileName, string relativeToPath = null) : base(File.Create(fileName, 8192, FileOptions.Asynchronous), true, relativeToPath)
-        {
-        }
+    }
 
-        protected override async Task WriteHeaderAsync(string name, DateTime lastModificationTime, long count, int userId, int groupId, int mode, EntryType entryType)
+    protected override async Task WriteHeaderAsync(string name, DateTime lastModificationTime, long count, int userId, int groupId, int mode, EntryType entryType)
+    {
+        var modifiedPath = GetPath(name);
+        Debug.WriteLine(modifiedPath);
+        var tarHeader = new UsTarHeader
         {
-            var modifiedPath = GetPath(name);
-            Debug.WriteLine(modifiedPath);
-            var tarHeader = new UsTarHeader
-            {
-                FileName = modifiedPath,
-                LastModification = lastModificationTime,
-                SizeInBytes = count,
-                UserId = userId,
-                UserName = Convert.ToString(userId, 8),
-                GroupId = groupId,
-                GroupName = Convert.ToString(groupId, 8),
-                Mode = mode,
-                EntryType = entryType
-            };
-            await WriteAsync(tarHeader.GetHeaderValue(), 0, tarHeader.HeaderSize);
-        }
+            FileName = modifiedPath,
+            LastModification = lastModificationTime,
+            SizeInBytes = count,
+            UserId = userId,
+            UserName = Convert.ToString(userId, 8),
+            GroupId = groupId,
+            GroupName = Convert.ToString(groupId, 8),
+            Mode = mode,
+            EntryType = entryType
+        };
+        await WriteAsync(tarHeader.GetHeaderValue(), 0, tarHeader.HeaderSize);
+    }
 
-        protected virtual async Task WriteHeaderAsync(string name, DateTime lastModificationTime, long count, string userName, string groupName, int mode)
+    protected virtual async Task WriteHeaderAsync(string name, DateTime lastModificationTime, long count, string userName, string groupName, int mode)
+    {
+        var modifiedPath = GetPath(name);
+        Debug.WriteLine(modifiedPath);
+        var tarHeader = new UsTarHeader
         {
-            var modifiedPath = GetPath(name);
-            Debug.WriteLine(modifiedPath);
-            var tarHeader = new UsTarHeader
-            {
-                FileName = modifiedPath,
-                LastModification = lastModificationTime,
-                SizeInBytes = count,
-                UserId = userName.GetHashCode(),
-                UserName = userName,
-                GroupId = groupName.GetHashCode(),
-                GroupName = groupName,
-                Mode = mode
-            };
-            await WriteAsync(tarHeader.GetHeaderValue(), 0, tarHeader.HeaderSize);
-        }
+            FileName = modifiedPath,
+            LastModification = lastModificationTime,
+            SizeInBytes = count,
+            UserId = userName.GetHashCode(),
+            UserName = userName,
+            GroupId = groupName.GetHashCode(),
+            GroupName = groupName,
+            Mode = mode
+        };
+        await WriteAsync(tarHeader.GetHeaderValue(), 0, tarHeader.HeaderSize);
+    }
 
-        public async Task WriteAsync(Stream data, long dataSizeInBytes, string fileName, string userId, string groupId, int mode,
-                          DateTime lastModificationTime)
-        {
-            await WriteHeaderAsync(fileName, lastModificationTime, dataSizeInBytes, userId, groupId, mode);
-            await CopyStreamAsync(data);
-            await AlignTo512Async(dataSizeInBytes, false);
-        }
+    public async Task WriteAsync(Stream data, long dataSizeInBytes, string fileName, string userId, string groupId, int mode,
+        DateTime lastModificationTime)
+    {
+        await WriteHeaderAsync(fileName, lastModificationTime, dataSizeInBytes, userId, groupId, mode);
+        await CopyStreamAsync(data);
+        await AlignTo512Async(dataSizeInBytes, false);
     }
 }

@@ -5,15 +5,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ROOT.Shared.Utils.IPMI;
 using ROOT.Shared.Utils.Serialization;
 
-namespace ROOT.Shared.Utils.Tests.IPMI
+namespace ROOT.Shared.Utils.Tests.IPMI;
+
+[TestClass]
+public class IPMIParserTest
 {
-    [TestClass]
-    public class IPMIParserTest
+    [TestMethod]
+    public void ParseSensorRecords()
     {
-        [TestMethod]
-        public void ParseSensorRecords()
-        {
-            const string raw = @"Sensor ID              : CPU1 Temp (0x1)
+        const string raw = @"Sensor ID              : CPU1 Temp (0x1)
 Sensor ID              : CPU2 Temp (0x2)
 Sensor ID              : PCH Temp (0xa)
 Sensor ID              : System Temp (0xb)
@@ -67,11 +67,10 @@ Sensor ID              : 1.05V PCH (0x3e)
 Sensor ID              : Chassis Intru (0xaa)
 Sensor ID              : PS2 Status (0xc9)";
 
-            var parser = new IPMIParser();
-            var sensors = parser.ParseSensorIds(raw);
-            Console.WriteLine(sensors.Dump());
+        var parser = new IPMIParser();
+        var sensors = parser.ParseSensorIds(raw);
+        Console.WriteLine(sensors.Dump());
             
-        }
-
     }
+
 }

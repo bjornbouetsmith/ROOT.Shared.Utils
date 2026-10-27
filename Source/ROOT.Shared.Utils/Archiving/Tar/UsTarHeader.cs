@@ -17,126 +17,125 @@ using System;
 using System.Net;
 using System.Text;
 
-namespace ROOT.Shared.Utils.Archiving.Tar
+namespace ROOT.Shared.Utils.Archiving.Tar;
+
+/// <summary>
+/// UsTar header implementation.
+/// </summary>
+internal class UsTarHeader : TarHeader
 {
-    /// <summary>
-    /// UsTar header implementation.
-    /// </summary>
-    internal class UsTarHeader : TarHeader
+    private const string magic = "ustar";
+    private const string version = "  ";
+    private string groupName;
+
+    private string namePrefix = string.Empty;
+    private string userName;
+
+    public override string UserName
     {
-        private const string magic = "ustar";
-        private const string version = "  ";
-        private string groupName;
-
-        private string namePrefix = string.Empty;
-        private string userName;
-
-        public override string UserName
+        get => userName.Replace("\0",string.Empty);
+        set
         {
-            get => userName.Replace("\0",string.Empty);
-            set
+            if (value.Length > 32)
             {
-                if (value.Length > 32)
-                {
-                    throw new TarException("user name can not be longer than 32 chars");
-                }
-                userName = value;
+                throw new TarException("user name can not be longer than 32 chars");
             }
+            userName = value;
         }
+    }
 
-        public override string GroupName
+    public override string GroupName
+    {
+        get => groupName.Replace("\0",string.Empty);
+        set
         {
-            get => groupName.Replace("\0",string.Empty);
-            set
+            if (value.Length > 32)
             {
-                if (value.Length > 32)
-                {
-                    throw new TarException("group name can not be longer than 32 chars");
-                }
-                groupName = value;
+                throw new TarException("group name can not be longer than 32 chars");
             }
+            groupName = value;
         }
+    }
 
-        public override string FileName
+    public override string FileName
+    {
+        get => namePrefix.Replace("\0", string.Empty) + base.FileName.Replace("\0", string.Empty);
+        set
         {
-            get => namePrefix.Replace("\0", string.Empty) + base.FileName.Replace("\0", string.Empty);
-            set
+            if (value.Length > 100)
             {
-                if (value.Length > 100)
+                if (value.Length > 255)
                 {
-                    if (value.Length > 255)
-                    {
-                        throw new TarException("UsTar fileName can not be longer thatn 255 chars");
-                    }
-                    int position = value.Length - 100;
+                    throw new TarException("UsTar fileName can not be longer thatn 255 chars");
+                }
+                int position = value.Length - 100;
 
-                    // Find first path separator in the remaining 100 chars of the file name
-                    while (!IsPathSeparator(value[position]))
-                    {
-                        ++position;
-                        if (position == value.Length)
-                        {
-                            break;
-                        }
-                    }
+                // Find first path separator in the remaining 100 chars of the file name
+                while (!IsPathSeparator(value[position]))
+                {
+                    ++position;
                     if (position == value.Length)
-                        position = value.Length - 100;
-                    namePrefix = value.Substring(0, position);
-                    base.FileName = value.Substring(position, value.Length - position);
+                    {
+                        break;
+                    }
                 }
-                else
-                {
-                    base.FileName = value;
-                }
+                if (position == value.Length)
+                    position = value.Length - 100;
+                namePrefix = value.Substring(0, position);
+                base.FileName = value.Substring(position, value.Length - position);
             }
-        }
-
-        public override bool UpdateHeaderFromBytes()
-        {
-            byte[] bytes = GetBytes();
-            UserName = Encoding.ASCII.GetString(bytes, 0x109, 32);
-            GroupName = Encoding.ASCII.GetString(bytes, 0x129, 32);
-            namePrefix = Encoding.ASCII.GetString(bytes, 347, 157);
-            return base.UpdateHeaderFromBytes();
-        }
-
-        internal static bool IsPathSeparator(char ch)
-        {
-            return (ch == '\\' || ch == '/' || ch == '|'); // All the path separators I ever met.
-        }
-
-        public override byte[] GetHeaderValue()
-        {
-            byte[] header = base.GetHeaderValue();
-
-            Encoding.ASCII.GetBytes(magic).CopyTo(header, 0x101); // Mark header as ustar
-            Encoding.ASCII.GetBytes(version).CopyTo(header, 0x106);
-            Encoding.ASCII.GetBytes(UserName).CopyTo(header, 0x109);
-            Encoding.ASCII.GetBytes(GroupName).CopyTo(header, 0x129);
-            Encoding.ASCII.GetBytes(namePrefix).CopyTo(header, 347);
-
-            if (SizeInBytes >= 0x1FFFFFFFF)
+            else
             {
-                byte[] bytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(SizeInBytes));
-                SetMarker(AlignTo12(bytes)).CopyTo(header, 124);
+                base.FileName = value;
             }
-
-            RecalculateChecksum(header);
-            Encoding.ASCII.GetBytes(HeaderChecksumString).CopyTo(header, 148);
-            return header;
         }
+    }
 
-        private static byte[] SetMarker(byte[] bytes)
+    public override bool UpdateHeaderFromBytes()
+    {
+        byte[] bytes = GetBytes();
+        UserName = Encoding.ASCII.GetString(bytes, 0x109, 32);
+        GroupName = Encoding.ASCII.GetString(bytes, 0x129, 32);
+        namePrefix = Encoding.ASCII.GetString(bytes, 347, 157);
+        return base.UpdateHeaderFromBytes();
+    }
+
+    internal static bool IsPathSeparator(char ch)
+    {
+        return (ch == '\\' || ch == '/' || ch == '|'); // All the path separators I ever met.
+    }
+
+    public override byte[] GetHeaderValue()
+    {
+        byte[] header = base.GetHeaderValue();
+
+        Encoding.ASCII.GetBytes(magic).CopyTo(header, 0x101); // Mark header as ustar
+        Encoding.ASCII.GetBytes(version).CopyTo(header, 0x106);
+        Encoding.ASCII.GetBytes(UserName).CopyTo(header, 0x109);
+        Encoding.ASCII.GetBytes(GroupName).CopyTo(header, 0x129);
+        Encoding.ASCII.GetBytes(namePrefix).CopyTo(header, 347);
+
+        if (SizeInBytes >= 0x1FFFFFFFF)
         {
-            bytes[0] |= 0x80;
-            return bytes;
+            byte[] bytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(SizeInBytes));
+            SetMarker(AlignTo12(bytes)).CopyTo(header, 124);
         }
 
-        private static byte[] AlignTo12(byte[] bytes)
-        {
-            var retVal = new byte[12];
-            bytes.CopyTo(retVal, 12 - bytes.Length);
-            return retVal;
-        }
+        RecalculateChecksum(header);
+        Encoding.ASCII.GetBytes(HeaderChecksumString).CopyTo(header, 148);
+        return header;
+    }
+
+    private static byte[] SetMarker(byte[] bytes)
+    {
+        bytes[0] |= 0x80;
+        return bytes;
+    }
+
+    private static byte[] AlignTo12(byte[] bytes)
+    {
+        var retVal = new byte[12];
+        bytes.CopyTo(retVal, 12 - bytes.Length);
+        return retVal;
     }
 }

@@ -1,19 +1,18 @@
-﻿namespace ROOT.Shared.Utils.OS
+﻿namespace ROOT.Shared.Utils.OS;
+
+/// <summary>
+/// enumeration with detected linux types - undetected is <see cref="LinuxType.Other"/>
+/// </summary>
+public enum LinuxType
 {
-    /// <summary>
-    /// enumeration with detected linux types - undetected is <see cref="LinuxType.Other"/>
-    /// </summary>
-    public enum LinuxType
-    {
-        Other,
-        CentOS,
-        Debian,
-        Fedora,
-        Redhat,
-        OpenSuse,
-        Oracle,
-        SLES,
-        Ubuntu,
-        Rocky,
-    }
+    Other,
+    CentOS,
+    Debian,
+    Fedora,
+    Redhat,
+    OpenSuse,
+    Oracle,
+    SLES,
+    Ubuntu,
+    Rocky,
 }

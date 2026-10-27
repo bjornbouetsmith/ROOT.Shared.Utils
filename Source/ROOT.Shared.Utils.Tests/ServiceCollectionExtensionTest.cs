@@ -7,7 +7,6 @@ namespace ROOT.Shared.Utils.Tests;
 [TestClass]
 public class ServiceCollectionExtensionTest
 {
-
     [TestMethod]
     public void ShouldBeAbleToResolveIProcessCall()
     {
