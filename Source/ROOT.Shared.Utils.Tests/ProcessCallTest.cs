@@ -114,14 +114,22 @@ public class ProcessCallTest
     [DataRow(false, ProcessCallExtensions.UnixShell, ProcessCallExtensions.UnixShellPrefix)]
     public void ProcessCallExecuteTest(bool useShell, string shell, string shellPrefix)
     {
-        ProcessCallExtensions.ShellPrefix = shellPrefix;
-        var pc = new ProcessCall("/usr/sbin/zfs", "list") | new ProcessCall("/usr/bin/grep", "MOUNT");
-        pc.UseShell = useShell;
-        pc.Shell = shell;
-        var cmd = pc.Execute();
-        Console.WriteLine(cmd.FullCommandLine);
-        var expected = useShell ? $"{shell} {shellPrefix} \"/usr/sbin/zfs list | /usr/bin/grep MOUNT\"" : "/usr/sbin/zfs list | /usr/bin/grep MOUNT";
-        Assert.AreEqual(expected, cmd.FullCommandLine);
+        var originalShellPrefix = ProcessCallExtensions.ShellPrefix;
+        try
+        {
+            ProcessCallExtensions.ShellPrefix = shellPrefix;
+            var pc = new ProcessCall("/usr/sbin/zfs", "list") | new ProcessCall("/usr/bin/grep", "MOUNT");
+            pc.UseShell = useShell;
+            pc.Shell = shell;
+            var cmd = pc.Execute();
+            Console.WriteLine(cmd.FullCommandLine);
+            var expected = useShell ? $"{shell} {shellPrefix} \"/usr/sbin/zfs list | /usr/bin/grep MOUNT\"" : "/usr/sbin/zfs list | /usr/bin/grep MOUNT";
+            Assert.AreEqual(expected, cmd.FullCommandLine);
+        }
+        finally
+        {
+            ProcessCallExtensions.ShellPrefix = originalShellPrefix;
+        }
     }
 
     [TestMethod]
