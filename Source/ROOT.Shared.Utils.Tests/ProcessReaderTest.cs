@@ -132,6 +132,27 @@ public class ProcessReaderTest
     }
 
     [TestMethod]
+    public async Task WaitAsync_WhenBothStreamsReceiveConcurrentOutput_CapturesCompleteStreams()
+    {
+        const int lineCount = 200;
+        using var process = CreateDualStreamOutputProcess(lineCount);
+        using var reader = new ProcessReader(process, TimeSpan.FromSeconds(30));
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        await reader.WaitAsync(cancellation.Token);
+
+        var stdOutLines = reader.Output.ReadToEnd().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        var stdErrLines = reader.Error.ReadToEnd().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.AreEqual(lineCount, stdOutLines.Length);
+        Assert.AreEqual(lineCount, stdErrLines.Length);
+        Assert.AreEqual("out1", stdOutLines[0]);
+        Assert.AreEqual($"out{lineCount}", stdOutLines[^1]);
+        Assert.AreEqual("err1", stdErrLines[0]);
+        Assert.AreEqual($"err{lineCount}", stdErrLines[^1]);
+    }
+
+    [TestMethod]
     public async Task WaitAsync_WithInputStream_ForwardsInputToProcessStandardInput()
     {
         using var process = CreateStandardInputEchoProcess(out var inputText);
@@ -420,6 +441,35 @@ public class ProcessReaderTest
         return null;
     }
 
+    private static Process CreateDualStreamOutputProcess(int lineCount)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var cmd = GetSystemExecutable("cmd.exe");
+            var startInfo = CreateRedirectedStartInfo(cmd);
+            startInfo.ArgumentList.Add("/C");
+            startInfo.ArgumentList.Add($"for /L %i in (1,1,{lineCount}) do @(echo out%i& echo err%i>&2)");
+            return new Process { StartInfo = startInfo };
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            const string sh = "/bin/sh";
+            if (!File.Exists(sh))
+            {
+                Assert.Inconclusive($"Test executable not found: {sh}");
+            }
+
+            var startInfo = CreateRedirectedStartInfo(sh);
+            startInfo.ArgumentList.Add("-c");
+            startInfo.ArgumentList.Add($"i=1; while [ $i -le {lineCount} ]; do echo out$i; echo err$i >&2; i=$((i+1)); done");
+            return new Process { StartInfo = startInfo };
+        }
+
+        Assert.Inconclusive("The test requires Windows or Linux.");
+        return null;
+    }
+
     private static Process CreateFloodingProcess()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -430,7 +480,6 @@ public class ProcessReaderTest
             startInfo.ArgumentList.Add("for /L %i in (1,1,1000000) do @(echo out%i & echo err%i 1>&2)");
             return new Process { StartInfo = startInfo };
         }
-
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             const string sh = "/bin/sh";

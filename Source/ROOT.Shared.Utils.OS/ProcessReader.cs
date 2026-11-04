@@ -15,6 +15,8 @@ public sealed class ProcessReader : IDisposable
     private readonly StreamWriter _errorWriter;
     private readonly ManualResetEventSlim _outEvent = new(false);
     private readonly ManualResetEventSlim _errEvent = new(false);
+    private readonly object _outputLock = new();
+    private readonly object _errorLock = new();
 
     public int ExitCode { get; private set; }
     public StreamReader Output { get; private set; }
@@ -177,33 +179,43 @@ public sealed class ProcessReader : IDisposable
 
     private void OnOutputDataReceived(object sender, DataReceivedEventArgs e)
     {
-        Write(_outputWriter, e.Data, _outEvent);
-    }
-
-    private void OnErrorDataReceived(object sender, DataReceivedEventArgs e)
-    {
-        Write(_errorWriter, e.Data, _errEvent);
-    }
-
-    private static void Write(StreamWriter writer, string what, ManualResetEventSlim evt)
-    {
-        // When we receive null, no more input is expected, so we set the event
-        if (what == null)
+        if (e.Data == null)
         {
-            evt.Set();
+            _outEvent.Set();
             return;
         }
 
-        if (writer == null)
+        if (_outputWriter == null)
         {
             return;
         }
 
         // The process raises output events on its own reader threads. Writing synchronously
         // keeps the end-of-stream event ordered after all data written for that stream.
-        lock (writer)
+        lock (_outputLock)
         {
-            writer.WriteLine(what);
+            _outputWriter.WriteLine(e.Data);
+        }
+    }
+
+    private void OnErrorDataReceived(object sender, DataReceivedEventArgs e)
+    {
+        if (e.Data == null)
+        {
+            _errEvent.Set();
+            return;
+        }
+
+        if (_errorWriter == null)
+        {
+            return;
+        }
+
+        // Each stream has its own writer and reader thread, so a dedicated lock per stream
+        // is enough and stdout/stderr do not block each other.
+        lock (_errorLock)
+        {
+            _errorWriter.WriteLine(e.Data);
         }
     }
 
