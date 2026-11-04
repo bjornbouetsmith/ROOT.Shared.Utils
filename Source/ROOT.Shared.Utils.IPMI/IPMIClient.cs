@@ -35,7 +35,7 @@ public class IPMIClient
         var pc = sshCall.Pipe(GetIPMISensorRecordsProcessCall());
 
         pc.Timeout = TimeSpan.FromSeconds(_timeOutSeconds);
-        var resp = pc.LoadResponse(true);
+        var resp = pc.LoadResponseAsync(true).ConfigureAwait(false).GetAwaiter().GetResult();
             
         var data = resp.StdOut;
 
@@ -46,7 +46,7 @@ public class IPMIClient
     {
         var pc = sshCall.Pipe(GetIPMISensorListProcessCall());
             
-        var resp = pc.LoadResponse(true);
+        var resp = pc.LoadResponseAsync(true).ConfigureAwait(false).GetAwaiter().GetResult();
             
         var data = resp.StdOut;
 

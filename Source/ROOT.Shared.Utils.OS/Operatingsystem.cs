@@ -78,7 +78,7 @@ public static class OperatingSystem
         {
             var pc = new ProcessCall(which, "systemctl");
 
-            var response = pc.LoadResponse(false);
+            var response = pc.LoadResponseAsync(false).ConfigureAwait(false).GetAwaiter().GetResult();
             if (response.Success && response.StdOut.Trim()
                     .ToLowerInvariant().Contains("systemctl"))
             {
@@ -86,7 +86,7 @@ public static class OperatingSystem
             }
             pc = new ProcessCall(which, "service");
 
-            response = pc.LoadResponse(false);
+            response = pc.LoadResponseAsync(false).ConfigureAwait(false).GetAwaiter().GetResult();
             if (response.Success && response.StdOut.Trim()
                     .ToLowerInvariant().Contains("service"))
             {

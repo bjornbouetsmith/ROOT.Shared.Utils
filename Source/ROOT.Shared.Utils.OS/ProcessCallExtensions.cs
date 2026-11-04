@@ -12,8 +12,16 @@ public static class ProcessCallExtensions
 
     public static IProcessCall ForceShell(this IProcessCall processCall, OSPlatform platform)
     {
+        ArgumentNullException.ThrowIfNull(processCall);
+
         var shell = platform == OSPlatform.Windows ? WindowsShell : UnixShell;
-        return new ProcessCall(processCall.BinPath, processCall.Arguments) { Shell = shell };
+        return new ProcessCall(processCall.BinPath, processCall.Arguments)
+        {
+            Shell = shell,
+            UseShell = true,
+            Timeout = processCall.Timeout,
+            RequiresSudo = processCall.RequiresSudo,
+        };
     }
 
     public static IProcessCall Pipe(this IProcessCall processCall, IProcessCall other)
@@ -69,19 +77,38 @@ public static class ProcessCallExtensions
         }
 
         string args = string.Concat(processCall.Arguments, " | ", other.BinPath, " ", other.Arguments).Trim();
-        return new ProcessCall(processCall.BinPath, args);
+        return new ProcessCall(processCall.BinPath, args)
+        {
+            Timeout = processCall.Timeout,
+            Shell = processCall.Shell,
+            UseShell = true,
+            RequiresSudo = processCall.RequiresSudo || other.RequiresSudo,
+        };
     }
 
     public static ProcessCall Pipe(this SSHProcessCall processCall, IProcessCall other)
     {
+        ArgumentNullException.ThrowIfNull(processCall);
+
+        if (other is null or LocalMachineProcessCall)
+        {
+            return processCall;
+        }
+
         if (processCall.Started || other.Started)
         {
             throw new InvalidOperationException("Cannot pipe two processes that has been started - use Pipe before you call LoadResponse");
         }
 
-        string args = string.Concat(processCall.Arguments, " \"", processCall.RequiresSudo ? Sudo.BinPath : "", " ", other.BinPath, " ", other.Arguments, "\"").Trim();
+        var requiresRemoteSudo = processCall.RequiresSudo || other.RequiresSudo;
+        string args = string.Concat(processCall.Arguments, " \"", requiresRemoteSudo ? Sudo.BinPath : "", " ", other.BinPath, " ", other.Arguments, "\"").Trim();
 
-        return new ProcessCall(processCall.BinPath, args);
+        return new ProcessCall(processCall.BinPath, args)
+        {
+            Timeout = processCall.Timeout,
+            Shell = processCall.Shell,
+            UseShell = processCall.UseShell,
+        };
     }
 
     public static IProcessCall Execute(this IProcessCall processCall)
