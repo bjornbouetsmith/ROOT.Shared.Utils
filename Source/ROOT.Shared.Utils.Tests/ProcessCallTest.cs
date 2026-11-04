@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -192,6 +194,75 @@ public class ProcessCallTest
     }
 
     [TestMethod]
+    public void Pipe_ForProcessCalls_PreservesConfiguration()
+    {
+        var first = new ProcessCall("/bin/first", "one")
+        {
+            Timeout = TimeSpan.FromSeconds(42),
+            Shell = "/bin/zsh",
+            UseShell = false,
+            RequiresSudo = true
+        };
+        var second = new ProcessCall("/bin/second", "two");
+
+        var piped = first | second;
+
+        Assert.AreEqual("/bin/first one | /bin/second two", piped.FullCommandLine);
+        Assert.AreEqual(TimeSpan.FromSeconds(42), piped.Timeout);
+        Assert.AreEqual("/bin/zsh", piped.Shell);
+        Assert.IsTrue(piped.UseShell);
+        Assert.IsTrue(piped.RequiresSudo);
+    }
+
+    [TestMethod]
+    public void Pipe_WhenSecondProcessRequiresSudo_PreservesSudo()
+    {
+        var piped = new ProcessCall("/bin/first", "one")
+            | new ProcessCall("/bin/second", "two") { RequiresSudo = true };
+
+        Assert.IsTrue(piped.RequiresSudo);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void ForceShell_ForProcessCall_PreservesConfigurationAndEnablesShell(bool windows)
+    {
+        var platform = windows ? OSPlatform.Windows : OSPlatform.Linux;
+        var expectedShell = windows ? ProcessCallExtensions.WindowsShell : ProcessCallExtensions.UnixShell;
+        var call = new ProcessCall("/bin/tool", "arg")
+        {
+            Timeout = TimeSpan.FromSeconds(42),
+            UseShell = false,
+            RequiresSudo = true
+        };
+
+        var forced = call.ForceShell(platform);
+
+        Assert.AreEqual(expectedShell, forced.Shell);
+        Assert.IsTrue(forced.UseShell);
+        Assert.AreEqual(TimeSpan.FromSeconds(42), forced.Timeout);
+        Assert.IsTrue(forced.RequiresSudo);
+        Assert.AreEqual("/bin/tool arg", forced.FullCommandLine);
+    }
+
+    [TestMethod]
+    public void Pipe_ForSshProcessCall_PreservesTimeoutAndDoesNotRequireLocalSudo()
+    {
+        var remote = new SSHProcessCall("bbs", "zfsdev.root.dom", true)
+        {
+            Timeout = TimeSpan.FromSeconds(42)
+        };
+
+        var full = remote | new ProcessCall("/usr/sbin/zfs", "get all");
+
+        Assert.AreEqual(TimeSpan.FromSeconds(42), full.Timeout);
+        Assert.IsFalse(full.RequiresSudo);
+        StringAssert.Contains(full.Arguments, "/usr/sbin/zfs get all");
+        StringAssert.Contains(full.Arguments, Sudo.BinPath);
+    }
+
+    [TestMethod]
     public void ProcessCallWithSudo()
     {
 
@@ -295,8 +366,8 @@ public class ProcessCallTest
     public async Task LoadResponseAsync_ForLocalProcess_ReturnsOutput()
     {
         var (binPath, arguments) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? ("C:\\Windows\\System32\\cmd.exe", new[] { "/C", "echo", "async hello" })
-            : ("/bin/echo", new[] { "async hello" });
+            ? ("C:\\Windows\\System32\\cmd.exe", new[] { "/C", "echo", "async", "hello" })
+            : ("/bin/echo", new[] { "async", "hello" });
 
         if (!File.Exists(binPath))
         {
@@ -339,6 +410,89 @@ public class ProcessCallTest
     }
 
     [TestMethod]
+    public async Task LoadResponseAsync_WithArgumentsContainingSpaces_PreservesArgumentBoundaries()
+    {
+        var scriptPath = CreateArgumentEchoScript();
+        try
+        {
+            var (binPath, arguments) = CreateArgumentEchoCall(scriptPath);
+            var call = new ProcessCall(binPath, arguments)
+            {
+                UseShell = false,
+                Timeout = TimeSpan.FromSeconds(10)
+            };
+
+            var result = await call.LoadResponseAsync(
+                false,
+                new ProcessCallArguments("first", "second value"));
+
+            var expected = "[first]" + Environment.NewLine + "[second value]" + Environment.NewLine;
+            Assert.AreEqual(expected, result.StdOut);
+        }
+        finally
+        {
+            if (File.Exists(scriptPath))
+            {
+                File.Delete(scriptPath);
+            }
+        }
+    }
+
+    private static string CreateArgumentEchoScript()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var path = Path.Combine(Path.GetTempPath(), "ROOT.Shared.Utils.ArgEcho.cmd");
+            var script = "@echo off\r\n"
+                + ":loop\r\n"
+                + "if \"%~1\"==\"\" goto end\r\n"
+                + "echo [%~1]\r\n"
+                + "shift\r\n"
+                + "goto loop\r\n"
+                + ":end\r\n";
+            File.WriteAllText(path, script);
+            return path;
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            var path = Path.Combine(Path.GetTempPath(), "ROOT.Shared.Utils.ArgEcho.sh");
+            var script = "#!/bin/sh\n"
+                + "for argument in \"$@\"; do\n"
+                + "  printf '[%s]\\n' \"$argument\"\n"
+                + "done\n";
+            File.WriteAllText(path, script);
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            return path;
+        }
+
+        Assert.Inconclusive("The test requires Windows or Linux.");
+        return null;
+    }
+
+    private static (string BinPath, string Arguments) CreateArgumentEchoCall(string scriptPath)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return ("C:\\Windows\\System32\\cmd.exe", $"/C call \"{scriptPath}\"");
+        }
+
+        return ("/bin/sh", scriptPath);
+    }
+
+    [TestMethod]
+    public async Task LoadResponseAsync_WhenProcessCannotStart_DoesNotMarkAsStarted()
+    {
+        var missingPath = Path.Combine(Path.GetTempPath(), "ROOT.Shared.Utils.Tests", "MissingProcess", "missing.exe");
+        var call = new ProcessCall(missingPath) { UseShell = false, Timeout = TimeSpan.FromSeconds(5) };
+
+        await Assert.ThrowsAsync<System.ComponentModel.Win32Exception>(
+            () => call.LoadResponseAsync(false));
+
+        Assert.IsFalse(call.Started);
+    }
+
+    [TestMethod]
     public async Task LoadResponseAsync_WithCancelledToken_ThrowsOperationCanceledException()
     {
         var call = new ProcessCall("/bin/echo", "hello") { UseShell = false };
@@ -347,5 +501,125 @@ public class ProcessCallTest
 
         await Assert.ThrowsExactlyAsync<OperationCanceledException>(
             () => call.LoadResponseAsync(false, cancellationToken: cancellation.Token));
+    }
+
+    [TestMethod]
+    public async Task LoadResponseAsync_WhenTokenCancelledWhileRunning_ThrowsOperationCanceledException()
+    {
+        var (binPath, arguments) = GetLongRunningCommand();
+        if (!File.Exists(binPath))
+        {
+            Assert.Inconclusive($"Test executable not found: {binPath}");
+        }
+
+        var call = new ProcessCall(binPath) { UseShell = false, Timeout = TimeSpan.FromSeconds(60) };
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => call.LoadResponseAsync(false, new ProcessCallArguments(arguments), cancellation.Token));
+    }
+
+    [TestMethod]
+    public async Task LoadResponseAsync_WhenTimeoutElapses_ThrowsTimeoutException()
+    {
+        var (binPath, arguments) = GetLongRunningCommand();
+        if (!File.Exists(binPath))
+        {
+            Assert.Inconclusive($"Test executable not found: {binPath}");
+        }
+
+        var call = new ProcessCall(binPath) { UseShell = false, Timeout = TimeSpan.FromMilliseconds(200) };
+
+        await Assert.ThrowsExactlyAsync<TimeoutException>(
+            () => call.LoadResponseAsync(false, new ProcessCallArguments(arguments)));
+    }
+
+    [TestMethod]
+    public async Task LoadResponseAsync_WhenCommandSucceeds_LogsSuccess()
+    {
+        var (binPath, arguments) = CreateExitCommand(0);
+        var call = new ProcessCall(binPath, arguments) { UseShell = false, Timeout = TimeSpan.FromSeconds(10) };
+        var listener = new CollectingTraceListener();
+        Trace.Listeners.Add(listener);
+        try
+        {
+            var result = await call.LoadResponseAsync(false);
+
+            Assert.AreEqual(0, result.ExitCode);
+            StringAssert.Contains(listener.Text, "success");
+        }
+        finally
+        {
+            Trace.Listeners.Remove(listener);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadResponseAsync_WhenCommandFails_DoesNotLogSuccess()
+    {
+        var (binPath, arguments) = CreateExitCommand(1);
+        var call = new ProcessCall(binPath, arguments) { UseShell = false, Timeout = TimeSpan.FromSeconds(10) };
+        var listener = new CollectingTraceListener();
+        Trace.Listeners.Add(listener);
+        try
+        {
+            var result = await call.LoadResponseAsync(false);
+
+            Assert.AreEqual(1, result.ExitCode);
+            Assert.IsFalse(listener.Text.Contains("success", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Trace.Listeners.Remove(listener);
+        }
+    }
+
+    private static (string BinPath, string Arguments) CreateExitCommand(int exitCode)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return ("C:\\Windows\\System32\\cmd.exe", $"/C exit {exitCode}");
+        }
+
+        return ("/bin/sh", $"-c \"exit {exitCode}\"");
+    }
+
+    private static (string BinPath, string[] Arguments) GetLongRunningCommand()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return ("C:\\Windows\\System32\\ping.exe", new[] { "-n", "10", "127.0.0.1" });
+        }
+
+        return ("/bin/sleep", new[] { "30" });
+    }
+
+    private sealed class CollectingTraceListener : TraceListener
+    {
+        private readonly StringBuilder _text = new();
+
+        public string Text
+        {
+            get
+            {
+                lock (_text)
+                {
+                    return _text.ToString();
+                }
+            }
+        }
+
+        public override void Write(string message)
+        {
+            lock (_text)
+            {
+                _text.Append(message);
+            }
+        }
+
+        public override void WriteLine(string message)
+        {
+            Write(message + Environment.NewLine);
+        }
     }
 }

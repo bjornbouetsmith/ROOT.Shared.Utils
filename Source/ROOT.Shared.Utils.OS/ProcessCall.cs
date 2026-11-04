@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,16 +51,27 @@ public partial class ProcessCall : IProcessCall
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var exec = this.Execute();
-        Started = true;
-        string args = exec.Arguments;
+        var processArguments = arguments.Arguments;
+        ProcessCall callToExecute = this;
 
-        if (arguments.Arguments is { Length: > 0 } processArguments)
+        if (processArguments.Length > 0)
         {
-            args += " " + string.Join(" ", processArguments);
+            if (Started)
+            {
+                throw new InvalidOperationException("Cannot execute process that has been started");
+            }
+
+            callToExecute = new ProcessCall(BinPath, AppendArguments(Arguments, processArguments, UseShell))
+            {
+                Shell = Shell,
+                UseShell = UseShell,
+                Timeout = Timeout,
+                RequiresSudo = RequiresSudo,
+            };
         }
 
-        args = args.Trim();
+        var exec = callToExecute.Execute();
+        string args = exec.Arguments.Trim();
 
         var startInfo = new ProcessStartInfo(exec.BinPath, args)
         {
@@ -75,19 +87,19 @@ public partial class ProcessCall : IProcessCall
 
         using var reader = new ProcessReader(process, Timeout, inputStream);
 
-        using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cancelSource.CancelAfter(Timeout);
-
         try
         {
-            await reader.WaitAsync(cancelSource.Token).ConfigureAwait(false);
+            await reader.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (TimeoutException) when (cancellationToken.IsCancellationRequested)
+        finally
         {
-            throw new OperationCanceledException(cancellationToken);
+            // The instance is only marked as started once the process was actually launched.
+            if (reader.Started)
+            {
+                Started = true;
+            }
         }
 
-        Trace.TraceInformation($"Command: {FullCommandLine} success");
         var exitCode = reader.ExitCode;
 
         var stdOut = reader.Output is null ? null : await reader.Output.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
@@ -98,7 +110,100 @@ public partial class ProcessCall : IProcessCall
             throw result.ToException();
         }
 
+        if (exitCode == 0)
+        {
+            Trace.TraceInformation($"Command: {FullCommandLine} success");
+        }
+
         return result;
+    }
+
+    private static string AppendArguments(string arguments, string[] extraArguments, bool forShell)
+    {
+        var combined = arguments ?? string.Empty;
+
+        foreach (var argument in extraArguments)
+        {
+            var quoted = QuoteArgument(argument, forShell);
+            combined = combined.Length == 0 ? quoted : combined + " " + quoted;
+        }
+
+        return combined;
+    }
+
+    private static string QuoteArgument(string argument, bool forShell)
+    {
+        if (argument.Length == 0)
+        {
+            return "\"\"";
+        }
+
+        if (!NeedsQuoting(argument, forShell))
+        {
+            return argument;
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return QuoteWindowsArgument(argument);
+        }
+
+        if (forShell)
+        {
+            return "'" + argument.Replace("'", "'\\''") + "'";
+        }
+
+        return QuoteWindowsArgument(argument);
+    }
+
+    private static bool NeedsQuoting(string argument, bool forShell)
+    {
+        foreach (var c in argument)
+        {
+            if (char.IsWhiteSpace(c) || c == '"' || c == '\'')
+            {
+                return true;
+            }
+
+            if (forShell && c is '$' or '`' or '&' or '|' or '<' or '>' or ';' or '(' or ')' or '^' or '%' or '!' or '*' or '?')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string QuoteWindowsArgument(string argument)
+    {
+        var result = new StringBuilder();
+        result.Append('"');
+
+        var backslashes = 0;
+        foreach (var c in argument)
+        {
+            if (c == '\\')
+            {
+                backslashes++;
+                continue;
+            }
+
+            if (c == '"')
+            {
+                result.Append('\\', backslashes * 2 + 1);
+                result.Append('"');
+                backslashes = 0;
+                continue;
+            }
+
+            result.Append('\\', backslashes);
+            backslashes = 0;
+            result.Append(c);
+        }
+
+        result.Append('\\', backslashes * 2);
+        result.Append('"');
+        return result.ToString();
     }
 
     public bool Started { get; private set; }
