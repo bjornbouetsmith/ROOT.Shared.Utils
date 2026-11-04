@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ROOT.Shared.Utils.OS;
@@ -19,16 +20,22 @@ public interface IProcessCall
     /// Loads the response from the process call, using the passed input stream and arguments if any
     /// </summary>
     ProcessCallResult LoadResponse(bool throwOnFailure, Stream inputStream, params string[] arguments);
+
     /// <summary>
     /// Asynchronously loads the response from the process call, using the passed arguments if any
     /// </summary>
     /// <param name="throwOnFailure">Whether or not throw an exception if statuscode indicates a failure or not</param>
     /// <param name="arguments">Any arguments to pass to the command</param>
-    Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, params string[] arguments);
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, ProcessCallArguments arguments = default, CancellationToken cancellationToken = default);
     /// <summary>
     /// Asynchronously loads the response from the process call, using the passed input stream and arguments if any
     /// </summary>
-    Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, Stream inputStream, params string[] arguments);
+    /// <param name="throwOnFailure">Whether or not throw an exception if statuscode indicates a failure or not</param>
+    /// <param name="inputStream">Optional input stream to pass to the process</param>
+    /// <param name="arguments">Any arguments to pass to the command</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, Stream inputStream, ProcessCallArguments arguments = default, CancellationToken cancellationToken = default);
 
     string BinPath { get; }
     string Arguments { get; }

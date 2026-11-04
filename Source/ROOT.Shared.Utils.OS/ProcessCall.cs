@@ -33,28 +33,30 @@ public partial class ProcessCall : IProcessCall
 
     public ProcessCallResult LoadResponse(bool throwOnFailure, params string[] arguments)
     {
-        return LoadResponse(throwOnFailure, null, arguments);
+        return LoadResponseAsync(throwOnFailure,new ProcessCallArguments(arguments)).GetAwaiter().GetResult();
     }
 
     public ProcessCallResult LoadResponse(bool throwOnFailure, Stream inputStream, params string[] arguments)
     {
-        return LoadResponseAsync(throwOnFailure, inputStream, arguments).ConfigureAwait(false).GetAwaiter().GetResult();
+        return LoadResponseAsync(throwOnFailure, inputStream, new ProcessCallArguments(arguments)).GetAwaiter().GetResult();
     }
 
-    public Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, params string[] arguments)
+    public Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, ProcessCallArguments arguments = default, CancellationToken cancellationToken = default)
     {
-        return LoadResponseAsync(throwOnFailure, null, arguments);
+        return LoadResponseAsync(throwOnFailure, null, arguments, cancellationToken);
     }
 
-    public async Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, Stream inputStream, params string[] arguments)
+    public async Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, Stream inputStream, ProcessCallArguments arguments = default, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var exec = this.Execute();
         Started = true;
         string args = exec.Arguments;
 
-        if (arguments is { Length: > 0 })
+        if (arguments.Arguments is { Length: > 0 } processArguments)
         {
-            args += " " + string.Join(" ", arguments);
+            args += " " + string.Join(" ", processArguments);
         }
 
         args = args.Trim();
@@ -73,15 +75,23 @@ public partial class ProcessCall : IProcessCall
 
         using var reader = new ProcessReader(process, Timeout, inputStream);
 
-        using var cancelSource = new CancellationTokenSource(Timeout);
-        
-        
-        await reader.WaitAsync(cancelSource.Token).ConfigureAwait(false);
+        using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cancelSource.CancelAfter(Timeout);
+
+        try
+        {
+            await reader.WaitAsync(cancelSource.Token).ConfigureAwait(false);
+        }
+        catch (TimeoutException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException(cancellationToken);
+        }
+
         Trace.TraceInformation($"Command: {FullCommandLine} success");
         var exitCode = reader.ExitCode;
 
-        var stdOut = reader.Output is null ? null : await reader.Output.ReadToEndAsync(CancellationToken.None).ConfigureAwait(false);
-        var stdError = reader.Error is null ? null : await reader.Error.ReadToEndAsync(CancellationToken.None).ConfigureAwait(false);
+        var stdOut = reader.Output is null ? null : await reader.Output.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+        var stdError = reader.Error is null ? null : await reader.Error.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
         var result = new ProcessCallResult { ExitCode = exitCode, StdOut = stdOut, StdError = stdError, CommandLine = string.Join(" ", exec.BinPath, args) };
         if (throwOnFailure && exitCode != 0)
         {

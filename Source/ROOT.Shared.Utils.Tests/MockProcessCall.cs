@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using ROOT.Shared.Utils.OS;
 
@@ -7,17 +8,29 @@ namespace ROOT.Shared.Utils.Tests;
 
 internal class MockProcessCall : IProcessCall
 {
-    public ProcessCallResult LoadResponse(bool throwOnFailure, params string[] arguments)
-    {
-        return LoadResponse(throwOnFailure, null, arguments);
-    }
-
     public string StdOutput { get; set; }
 
     public string StdError { get; set; }
 
+    public ProcessCallResult LoadResponse(bool throwOnFailure, params string[] arguments)
+    {
+        return LoadResponseAsync(throwOnFailure, new ProcessCallArguments(arguments)).GetAwaiter().GetResult();
+    }
+
     public ProcessCallResult LoadResponse(bool throwOnFailure, Stream inputStream, params string[] arguments)
     {
+        return LoadResponseAsync(throwOnFailure, inputStream, new ProcessCallArguments(arguments)).GetAwaiter().GetResult();
+    }
+
+    public Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, ProcessCallArguments arguments = default, CancellationToken cancellationToken = default)
+    {
+        return LoadResponseAsync(throwOnFailure, null, arguments, cancellationToken);
+    }
+
+    public Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, Stream inputStream, ProcessCallArguments arguments = default, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var res = new ProcessCallResult
         {
             CommandLine = FullCommandLine,
@@ -29,17 +42,7 @@ internal class MockProcessCall : IProcessCall
         {
             throw res.ToException();
         }
-        return res;
-    }
-
-    public Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, params string[] arguments)
-    {
-        return LoadResponseAsync(throwOnFailure, null, arguments);
-    }
-
-    public Task<ProcessCallResult> LoadResponseAsync(bool throwOnFailure, Stream inputStream, params string[] arguments)
-    {
-        return Task.FromResult(LoadResponse(throwOnFailure, inputStream, arguments));
+        return Task.FromResult(res);
     }
 
     public bool Success { get; set; } = true;

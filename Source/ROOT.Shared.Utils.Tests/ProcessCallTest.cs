@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ROOT.Shared.Utils.OS;
@@ -11,7 +12,7 @@ namespace ROOT.Shared.Utils.Tests;
 public class ProcessCallTest
 {
     [TestMethod]
-    public void SimpleCallWindows()
+    public async Task SimpleCallWindows()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -20,7 +21,7 @@ public class ProcessCallTest
         var call = new ProcessCall("C:\\Windows\\System32\\diskperf.exe");
         Console.WriteLine(call.Execute().FullCommandLine);
 
-        var result = call.LoadResponse(false, "/?");
+        var result = await call.LoadResponseAsync(false, new ProcessCallArguments("/?"));
 
         Assert.IsTrue(result.Success);
         Console.WriteLine(result.StdOut);
@@ -28,7 +29,7 @@ public class ProcessCallTest
     }
 
     [TestMethod]
-    public void PipeTestGenerationWindows()
+    public async Task PipeTestGenerationWindows()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -43,7 +44,7 @@ public class ProcessCallTest
 
         Console.WriteLine(call.FullCommandLine);
         Console.WriteLine(call.Execute().FullCommandLine);
-        var result = call.LoadResponse(false);
+        var result = await call.LoadResponseAsync(false);
 
         Assert.IsTrue(result.Success);
         Console.WriteLine(result.StdOut);
@@ -63,7 +64,7 @@ public class ProcessCallTest
     }
 
     [TestMethod]
-    public void PipeExecution()
+    public async Task PipeExecution()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -74,7 +75,7 @@ public class ProcessCallTest
         call |= new ProcessCall("C:\\Windows\\System32\\findstr.exe", "YD");
 
 
-        var response = call.LoadResponse(false);
+        var response = await call.LoadResponseAsync(false);
         Assert.IsTrue(response.Success);
         Console.WriteLine(response.StdOut);
         Assert.AreEqual("-YD Enables the disk performance counters for physical drives.", response.StdOut.Trim());
@@ -166,14 +167,14 @@ public class ProcessCallTest
     }
 
     [TestMethod]
-    public void MockProcessCallTest()
+    public async Task MockProcessCallTest()
     {
         var mock = new MockProcessCall();
         mock.StdOutput = "Hello world";
         IProcessCall pc = mock;
 
         pc |= new ProcessCall("/sbin/zfs", "list");
-        var result = pc.LoadResponse(false);
+        var result = await pc.LoadResponseAsync(false);
         Assert.AreEqual(mock.StdOutput, result.StdOut);
     }
 
@@ -199,6 +200,43 @@ public class ProcessCallTest
         command.UseShell = false;
 
         Assert.AreEqual("/usr/bin/sudo /sbin/zfs list", command.Execute().FullCommandLine);
+    }
+
+    [TestMethod]
+    public void LoadResponse_ForMockProcessCall_ReturnsConfiguredOutput()
+    {
+        var mock = new MockProcessCall
+        {
+            StdOutput = "sync output",
+            StdError = "sync error",
+            Success = true
+        };
+        IProcessCall pc = mock;
+
+        var result = pc.LoadResponse(false);
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("sync output", result.StdOut);
+        Assert.AreEqual("sync error", result.StdError);
+        Assert.AreEqual(mock.FullCommandLine, result.CommandLine);
+    }
+
+    [TestMethod]
+    public void LoadResponse_WithInputStream_ForMockProcessCall_ReturnsConfiguredOutput()
+    {
+        var mock = new MockProcessCall
+        {
+            StdOutput = "sync input output",
+            Success = true
+        };
+        IProcessCall pc = mock;
+        using var input = new MemoryStream([1, 2, 3]);
+
+        var result = pc.LoadResponse(false, input);
+
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.AreEqual("sync input output", result.StdOut);
     }
 
     [TestMethod]
@@ -267,10 +305,47 @@ public class ProcessCallTest
 
         var call = new ProcessCall(binPath) { UseShell = false, Timeout = TimeSpan.FromSeconds(30) };
 
-        var result = await call.LoadResponseAsync(false, arguments);
+        var result = await call.LoadResponseAsync(false, new ProcessCallArguments(arguments));
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual("async hello", result.StdOut?.Trim());
         Assert.AreEqual(string.Empty, result.StdError?.Trim());
+    }
+
+    [TestMethod]
+    public void ProcessCallArguments_WithArguments_ExposesArguments()
+    {
+        var arguments = new ProcessCallArguments("--first", "second value");
+
+        CollectionAssert.AreEqual(new[] { "--first", "second value" }, arguments.Arguments);
+    }
+
+    [TestMethod]
+    public void ProcessCallArguments_WithNullArguments_ExposesEmptyArray()
+    {
+        var arguments = new ProcessCallArguments(null);
+
+        Assert.IsNotNull(arguments.Arguments);
+        Assert.AreEqual(0, arguments.Arguments.Length);
+    }
+
+    [TestMethod]
+    public void ProcessCallArguments_Default_ExposesEmptyArray()
+    {
+        ProcessCallArguments arguments = default;
+
+        Assert.IsNotNull(arguments.Arguments);
+        Assert.AreEqual(0, arguments.Arguments.Length);
+    }
+
+    [TestMethod]
+    public async Task LoadResponseAsync_WithCancelledToken_ThrowsOperationCanceledException()
+    {
+        var call = new ProcessCall("/bin/echo", "hello") { UseShell = false };
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(
+            () => call.LoadResponseAsync(false, cancellationToken: cancellation.Token));
     }
 }
